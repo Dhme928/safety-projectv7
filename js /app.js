@@ -532,10 +532,10 @@
 
   function classifyWindRisk(speed) {
     if (speed == null || isNaN(speed)) return { label: '--', level: 'unknown' };
-    if (speed < 25) return { label: 'Safe for normal work', level: 'safe' };
-    if (speed < 38) return { label: 'Caution – monitor cranes & manlifts', level: 'caution' };
-    if (speed < 45) return { label: 'High risk – limit lifting operations', level: 'warning' };
-    return { label: 'Stop crane / manbasket operations', level: 'danger' };
+    // Saudi Aramco CSM I-11: Manbaskets limit is 32 km/h
+    if (speed < 20) return { label: 'Safe for normal work', level: 'safe' };
+    if (speed < 32) return { label: 'Caution – Approaching man-basket limit', level: 'caution' };
+    return { label: 'STOP Man-basket Operations (>32km/h)', level: 'danger' };
   }
 
   function calculateHeatIndex() {
@@ -567,21 +567,22 @@
     levelEl.className = 'heat-category ' + risk.level;
 
     let rec = '';
+    // Saudi Aramco CSM I-13: Heat Stress Program requirements
     switch (risk.level) {
       case 'safe':
-        rec = 'Normal work, basic hydration & regular breaks.';
+        rec = 'Normal work. Ensure water availability.';
         break;
       case 'caution':
-        rec = 'Increase water breaks, monitor workers, provide shade.';
+        rec = 'Increase water intake. Monitor workers. Provide shade/rest.';
         break;
       case 'warning':
-        rec = 'Frequent breaks, shorten work periods, buddy system.';
+        rec = 'Frequent breaks in shade. Enforce water replacement. Buddy system.';
         break;
       case 'danger':
-        rec = 'Only critical work with permit, strict controls.';
+        rec = 'Strict work/rest cycles. Only critical work with permit. Monitor continuously.';
         break;
       case 'extreme':
-        rec = 'Stop outdoor work except for life-saving activities.';
+        rec = 'Stop outdoor work except life-saving. Maximum protection required.';
         break;
     }
     listEl.innerHTML = `<li>${rec}</li>`;
@@ -623,13 +624,11 @@
         rec = 'Normal operations allowed.';
         break;
       case 'caution':
-        rec = 'Check CSM limits. Monitor cranes & MEWP.';
-        break;
-      case 'warning':
-        rec = 'Review work permits. Consider suspending critical lifts.';
+        rec = 'Monitor crane/man-basket wind speed indicators closely.';
         break;
       case 'danger':
-        rec = 'Stop crane / manbasket / heavy lifts.';
+        // CSM I-11
+        rec = 'Stop personnel platform (man-basket) operations immediately.';
         break;
     }
     listEl.innerHTML = `<li>${rec}</li>`;
