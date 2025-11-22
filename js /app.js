@@ -1,860 +1,1072 @@
-// My Observations App – core logic
-// This version is designed to work with the index.html + styles you already have.
-// It does NOT touch your layout or colors – only behaviour (tabs, numbers, links).
+// My Observations App - main logic
+// All browser code is wrapped so it’s safe if this file is linted in Node, etc.
+(function () {
+  if (typeof document === 'undefined') return;
 
-// ====== GLOBAL STATE ======
-let observations = [];
-let filteredObservations = [];
-let leaderboardData = [];
-let monthColorFromSheet = "";
+  // -------------------- Small helpers --------------------
 
-// current filters for Observations tab
-const obsFilters = {
-  range: "today",
-  risk: "",
-  status: "",
-  search: ""
-};
-
-// ====== SMALL UTILITIES ======
-function safeGet(id) {
-  return document.getElementById(id);
-}
-
-function setText(id, value, fallback = "--") {
-  const el = safeGet(id);
-  if (!el) return;
-  if (value === null || value === undefined || value === "") {
-    el.textContent = fallback;
-  } else {
-    el.textContent = value;
+  function $(selector) {
+    return document.querySelector(selector);
   }
-}
 
-function parseCSV(text) {
-  // Simple CSV parser good enough for Google Sheets exports
-  const lines = text.replace(/\r/g, "").split("\n").filter(l => l.trim() !== "");
-  if (!lines.length) return [];
-  const rows = [];
-  let current = [];
-  let inQuotes = false;
-  let field = "";
+  function $all(selector) {
+    return Array.from(document.querySelectorAll(selector));
+  }
 
-  for (let line of lines) {
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (ch === '"') {
-        if (inQuotes && line[i + 1] === '"') {
-          field += '"';
+  // Very small CSV parser that understands quotes and commas.
+  function parseCSV(text) {
+    const rows = [];
+    let current = [];
+    let value = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      const next = text[i + 1];
+
+      if (inQuotes) {
+        if (char === '"' && next === '"') {
+          value += '"';
           i++;
+        } else if (char === '"') {
+          inQuotes = false;
         } else {
-          inQuotes = !inQuotes;
+          value += char;
         }
-      } else if (ch === "," && !inQuotes) {
-        current.push(field);
-        field = "";
       } else {
-        field += ch;
+        if (char === '"') {
+          inQuotes = true;
+        } else if (char === ',') {
+          current.push(value.trim());
+          value = '';
+        } else if (char === '\n') {
+          current.push(value.trim());
+          rows.push(current);
+          current = [];
+          value = '';
+        } else if (char !== '\r') {
+          value += char;
+        }
       }
     }
-    if (inQuotes) {
-      field += "\n";
-    } else {
-      current.push(field);
+    if (value.length || current.length) {
+      current.push(value.trim());
       rows.push(current);
-      current = [];
-      field = "";
     }
+    return rows.filter(r => r.length > 0);
   }
-  if (current.length || field) {
-    current.push(field);
-    rows.push(current);
-  }
-  return rows;
-}
 
-function parseDate(value) {
-  if (!value) return null;
-  // Try native Date first (handles yyyy-mm-dd etc.)
-  let d = new Date(value);
-  if (!isNaN(d)) return d;
-  // Try dd/mm/yyyy or mm/dd/yyyy
-  const parts = value.split(/[\/\-]/);
-  if (parts.length === 3) {
-    const p1 = parseInt(parts[0], 10);
-    const p2 = parseInt(parts[1], 10);
-    const p3 = parseInt(parts[2], 10);
-    // assume p3 is year
-    if (!isNaN(p1) && !isNaN(p2) && !isNaN(p3)) {
-      // guess format: if p1 > 12 then it's dd/mm/yyyy
-      if (p1 > 12) {
-        d = new Date(p3, p2 - 1, p1);
-      } else {
-        d = new Date(p3, p1 - 1, p2);
-      }
-      if (!isNaN(d)) return d;
+  function findColumnIndex(headers, candidates) {
+    if (!headers) return -1;
+    const lower = headers.map(h => (h || '').toLowerCase().trim());
+    for (const c of candidates) {
+      const target = c.toLowerCase();
+      const idx = lower.findIndex(h => h === target);
+      if (idx !== -1) return idx;
     }
+    for (const c of candidates) {
+      const target = c.toLowerCase();
+      const idx = lower.findIndex(h => h.includes(target));
+      if (idx !== -1) return idx;
+    }
+    return -1;
   }
-  return null;
-}
 
-function isSameDay(a, b) {
-  return a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate();
-}
+  function parseSheetDate(value) {
+    if (!value) return null;
+    let d = new Date(value);
+    if (!isNaN(d.getTime())) return d;
 
-// ====== TABS & NAVIGATION ======
-function openTab(evt, tabId) {
-  // tab sections
-  const tabContents = document.getElementsByClassName("tab-content");
-  for (let i = 0; i < tabContents.length; i++) {
-    tabContents[i].classList.remove("active");
-  }
-  const target = safeGet(tabId);
-  if (target) target.classList.add("active");
-
-  // nav buttons
-  const navButtons = document.getElementsByClassName("nav-button");
-  for (let i = 0; i < navButtons.length; i++) {
-    navButtons[i].classList.remove("active");
-  }
-  if (evt && evt.currentTarget) {
-    evt.currentTarget.classList.add("active");
-  } else {
-    // fallback: match by onclick with tabId
-    for (let i = 0; i < navButtons.length; i++) {
-      const btn = navButtons[i];
-      const oc = btn.getAttribute("onclick") || "";
-      if (oc.includes("'" + tabId + "'")) {
-        btn.classList.add("active");
-        break;
+    const parts = value.split(/[\/\-]/).map(p => p.trim());
+    if (parts.length === 3) {
+      let [a, b, c] = parts;
+      if (c.length === 4) {
+        const day = parseInt(a, 10);
+        const month = parseInt(b, 10) - 1;
+        const year = parseInt(c, 10);
+        d = new Date(year, month, day);
+        if (!isNaN(d.getTime())) return d;
       }
     }
-  }
-}
-window.openTab = openTab;
-
-// ====== DARK / LIGHT MODE ======
-function toggleDarkMode() {
-  const body = document.body;
-  const icon = safeGet("modeIcon");
-  body.classList.toggle("dark-mode");
-  if (icon) {
-    if (body.classList.contains("dark-mode")) {
-      icon.classList.remove("fa-moon");
-      icon.classList.add("fa-sun");
-    } else {
-      icon.classList.add("fa-moon");
-      icon.classList.remove("fa-sun");
-    }
-  }
-}
-window.toggleDarkMode = toggleDarkMode;
-
-// ====== MODALS ======
-function showLeaderboardModal() {
-  const modal = safeGet("leaderboardModal");
-  if (!modal) return;
-  modal.style.display = "block";
-  // ensure latest data
-  renderLeaderboard();
-}
-function hideLeaderboardModal() {
-  const modal = safeGet("leaderboardModal");
-  if (modal) modal.style.display = "none";
-}
-window.showLeaderboardModal = showLeaderboardModal;
-window.hideLeaderboardModal = hideLeaderboardModal;
-
-function showEmergencyContactsModal() {
-  const modal = safeGet("emergencyContactsModal");
-  if (modal) modal.style.display = "block";
-}
-function hideEmergencyContactsModal() {
-  const modal = safeGet("emergencyContactsModal");
-  if (modal) modal.style.display = "none";
-}
-window.showEmergencyContactsModal = showEmergencyContactsModal;
-window.hideEmergencyContactsModal = hideEmergencyContactsModal;
-
-// ====== ACCORDIONS (Info / Home accordions) ======
-function initAccordions() {
-  const accordions = document.getElementsByClassName("accordion");
-  for (let i = 0; i < accordions.length; i++) {
-    accordions[i].addEventListener("click", function () {
-      this.classList.toggle("active");
-      const panel = this.nextElementSibling;
-      if (!panel) return;
-      if (panel.style.maxHeight) {
-        panel.style.maxHeight = null;
-      } else {
-        panel.style.maxHeight = panel.scrollHeight + "px";
-      }
-    });
-  }
-}
-
-// ====== GPS LOCATION (Emergency section) ======
-function getGPSLocation() {
-  const resultEl = safeGet("locationResult");
-  if (!resultEl) return;
-  if (!navigator.geolocation) {
-    resultEl.textContent = "Geolocation is not supported on this device.";
-    return;
-  }
-  resultEl.textContent = "Getting your location...";
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      const { latitude, longitude } = pos.coords;
-      const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-      resultEl.innerHTML = `
-        <strong>Location captured:</strong><br>
-        Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}<br>
-        <a href="${mapsUrl}" target="_blank">Open in Google Maps</a>
-      `;
-    },
-    err => {
-      resultEl.textContent = "Unable to get location. Check permissions/GPS.";
-      console.error(err);
-    }
-  );
-}
-window.getGPSLocation = getGPSLocation;
-
-// ====== TBT OF THE DAY + LIBRARY ======
-function loadTbtOfDay() {
-  const tbtList = window.tbtData || [];
-  const homeTbtContent = safeGet("homeTbtContent");
-  const tbtPanel = safeGet("tbtPanel");
-
-  if (!tbtList.length) {
-    if (homeTbtContent) homeTbtContent.textContent = "No TBT data configured. Add items in js/data.js.";
-    if (tbtPanel) tbtPanel.textContent = "No TBT items found.";
-    return;
+    return null;
   }
 
-  // pick deterministic TBT based on day of year
-  const today = new Date();
-  const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
-  const tbtOfDay = tbtList[dayOfYear % tbtList.length];
-
-  if (homeTbtContent) {
-    homeTbtContent.innerHTML = `
-      <div><strong>${tbtOfDay.title}</strong></div>
-      <a href="${tbtOfDay.link}" target="_blank">Open TBT document</a>
-    `;
+  function startOfDay(d) {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
   }
 
-  if (tbtPanel) {
-    tbtPanel.innerHTML = tbtList
-      .map(
-        item => `
-        <button class="tbt-list-item" onclick="window.open('${item.link}', '_blank')">
-          <i class="fas fa-book-open"></i>
-          <span>${item.title}</span>
-        </button>`
-      )
-      .join("");
-  }
-
-  // Also fill TBT Library tab (left column)
-  const tbtLibraryList = safeGet("tbtLibraryList");
-  if (tbtLibraryList) {
-    tbtLibraryList.innerHTML = tbtList
-      .map(
-        item => `
-        <div class="library-item" onclick="window.open('${item.link}','_blank')">
-          <i class="fas fa-book-open"></i>
-          <span>${item.title}</span>
-        </div>`
-      )
-      .join("");
-  }
-}
-
-// ====== JSA LIBRARY & SEARCH ======
-function renderJSAList(data) {
-  const container = safeGet("jsaListContainer");
-  if (!container) return;
-
-  if (!data || !data.length) {
-    container.innerHTML = `<p class="empty-note">No matching JSA found.</p>`;
-    return;
-  }
-
-  container.innerHTML = data
-    .map(
-      item => `
-      <div class="jsa-card">
-        <button class="jsa-card-header" onclick="window.open('${item.link}','_blank')">
-          <div class="jsa-title">
-            <i class="fas fa-file-alt"></i>
-            <span>${item.title}</span>
-          </div>
-          <i class="fas fa-external-link-alt jsa-open-icon"></i>
-        </button>
-      </div>`
-    )
-    .join("");
-}
-
-function initJsaSearch() {
-  const searchInput = safeGet("jsaSearch");
-  const allJsa = window.jsaData || [];
-  if (!searchInput) return;
-
-  renderJSAList(allJsa);
-
-  searchInput.addEventListener("input", () => {
-    const q = searchInput.value.toLowerCase();
-    const filtered = allJsa.filter(item =>
-      item.title.toLowerCase().includes(q)
+  function isSameDay(a, b) {
+    return (
+      a && b &&
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate()
     );
-    renderJSAList(filtered);
-  });
-}
-
-// ====== OBSERVATIONS: LOAD & DASHBOARD ======
-function loadObservations() {
-  const url = window.OBSERVATIONS_SHEET_CSV_URL;
-  if (!url) {
-    const empty = safeGet("observationsEmptyState");
-    if (empty) empty.style.display = "block";
-    return;
   }
 
-  fetch(url)
-    .then(res => {
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      return res.text();
-    })
-    .then(text => {
-      const rows = parseCSV(text);
-      if (!rows.length) return;
-
-      const headers = rows[0];
-      const dateIndex = headers.findIndex(h => h.trim().toLowerCase() === "date");
-      const raLevelIndex = headers.findIndex(h => h.trim().toLowerCase() === "ra level");
-      const statusIndex = headers.findIndex(h => h.trim().toLowerCase() === "report status");
-      const typeIndex = headers.findIndex(h => h.trim().toLowerCase().includes("observation types"));
-      const descIndex = headers.findIndex(h => h.trim().toLowerCase() === "description");
-      const areaIndex = headers.findIndex(h => h.trim().toLowerCase() === "area");
-      const nameIndex = headers.findIndex(h => h.trim().toLowerCase() === "name");
-      const idIndex = headers.findIndex(h => h.trim().toLowerCase() === "id");
-
-      observations = rows.slice(1).map(row => {
-        const obj = {};
-        headers.forEach((h, i) => {
-          obj[h.trim()] = (row[i] || "").trim();
-        });
-        obj._date = dateIndex >= 0 ? parseDate(row[dateIndex]) : null;
-        obj._raLevel = raLevelIndex >= 0 ? (row[raLevelIndex] || "").trim() : "";
-        obj._status = statusIndex >= 0 ? (row[statusIndex] || "").trim() : "";
-        obj._type = typeIndex >= 0 ? (row[typeIndex] || "").trim() : "";
-        obj._desc = descIndex >= 0 ? (row[descIndex] || "").trim() : "";
-        obj._area = areaIndex >= 0 ? (row[areaIndex] || "").trim() : "";
-        obj._observer = nameIndex >= 0 ? (row[nameIndex] || "").trim() : (idIndex >= 0 ? (row[idIndex] || "").trim() : "");
-        return obj;
-      }).filter(o => o._date instanceof Date && !isNaN(o._date));
-
-      updateObservationKpis();
-      initObservationFilters();
-      applyObservationFilters();
-    })
-    .catch(err => {
-      console.error("Error loading observations:", err);
-      const empty = safeGet("observationsEmptyState");
-      if (empty) {
-        empty.style.display = "block";
-        empty.querySelector("p").textContent =
-          "Error loading observations. Check OBSERVATIONS_SHEET_CSV_URL in js/data.js.";
-      }
-    });
-}
-
-function updateObservationKpis() {
-  if (!observations.length) return;
-  const today = new Date();
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-
-  const todayObs = observations.filter(o => isSameDay(o._date, today));
-  const observersToday = new Set(todayObs.map(o => o._observer).filter(Boolean)).size;
-  const highOpen = observations.filter(o =>
-    o._raLevel.toLowerCase().includes("high") &&
-    o._status.toLowerCase() !== "closed"
-  ).length;
-
-  setText("homeObserversToday", observersToday || "--");
-  setText("homeObservationsToday", todayObs.length || "--");
-  setText("homeHighRiskOpen", highOpen || "--");
-
-  const monthObs = observations.filter(o => o._date >= monthStart);
-  const openCount = monthObs.filter(o => o._status.toLowerCase() !== "closed").length;
-  const closedCount = monthObs.filter(o => o._status.toLowerCase() === "closed").length;
-
-  setText("obsCountMonth", monthObs.length || "--");
-  setText("obsCountOpen", openCount || "--");
-  setText("obsCountClosed", closedCount || "--");
-}
-
-function initObservationFilters() {
-  const chips = document.querySelectorAll(".obs-filter-chip");
-  chips.forEach(chip => {
-    chip.addEventListener("click", () => {
-      chips.forEach(c => c.classList.remove("active"));
-      chip.classList.add("active");
-      obsFilters.range = chip.dataset.range || "today";
-      applyObservationFilters();
-    });
-  });
-
-  const riskSelect = safeGet("obsFilterRisk");
-  if (riskSelect) {
-    riskSelect.addEventListener("change", () => {
-      obsFilters.risk = riskSelect.value;
-      applyObservationFilters();
-    });
-  }
-  const statusSelect = safeGet("obsFilterStatus");
-  if (statusSelect) {
-    statusSelect.addEventListener("change", () => {
-      obsFilters.status = statusSelect.value;
-      applyObservationFilters();
-    });
-  }
-  const searchInput = safeGet("obsSearch");
-  if (searchInput) {
-    searchInput.addEventListener("input", () => {
-      obsFilters.search = searchInput.value.toLowerCase();
-      applyObservationFilters();
-    });
+  function isSameMonth(a, b) {
+    return (
+      a && b &&
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth()
+    );
   }
 
-  const openSheetBtn = safeGet("openSheetButton");
-  if (openSheetBtn && window.OBSERVATIONS_FULL_SHEET_URL) {
-    openSheetBtn.addEventListener("click", () => {
-      window.open(window.OBSERVATIONS_FULL_SHEET_URL, "_blank");
+  function daysBetween(a, b) {
+    const ms = startOfDay(a) - startOfDay(b);
+    return Math.round(ms / (1000 * 60 * 60 * 24));
+  }
+
+  // -------------------- Global state --------------------
+
+  const state = {
+    darkMode: false,
+    observations: [],
+    observationsLoaded: false,
+    lastHeatSummary: null,
+    lastWindSummary: null
+  };
+
+  const obsFilterState = {
+    range: 'today',
+    risk: '',
+    status: '',
+    search: ''
+  };
+
+  // -------------------- Tab navigation --------------------
+
+  function openTab(evt, tabId) {
+    // hide all
+    $all('.tab-content').forEach(sec => {
+      sec.classList.remove('active');
+      sec.style.display = 'none';
     });
-  }
-}
 
-function applyObservationFilters() {
-  const listEl = safeGet("observationsList");
-  const emptyEl = safeGet("observationsEmptyState");
-  if (!listEl || !emptyEl) return;
-
-  if (!observations.length) {
-    emptyEl.style.display = "block";
-    listEl.innerHTML = "";
-    return;
-  }
-
-  const today = new Date();
-  const weekAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-
-  filteredObservations = observations.filter(o => {
-    const d = o._date;
-
-    if (obsFilters.range === "today" && !isSameDay(d, today)) return false;
-    if (obsFilters.range === "week" && (d < weekAgo || d > today)) return false;
-    if (obsFilters.range === "month" && d < monthStart) return false;
-
-    if (obsFilters.risk) {
-      if (o._raLevel.toLowerCase() !== obsFilters.risk.toLowerCase()) return false;
+    const target = $('#' + tabId);
+    if (target) {
+      target.classList.add('active');
+      target.style.display = 'block';
     }
 
-    if (obsFilters.status) {
-      const s = o._status.toLowerCase();
-      if (obsFilters.status === "Open" && s === "closed") return false;
-      if (obsFilters.status === "Closed" && s !== "closed") return false;
-      if (obsFilters.status === "In Progress" && !["in progress", "open"].includes(s)) return false;
+    // nav active
+    const navButtons = $all('.nav-button');
+    navButtons.forEach(btn => btn.classList.remove('active'));
+
+    if (evt && evt.currentTarget) {
+      evt.currentTarget.classList.add('active');
+    } else {
+      const match = navButtons.find(btn => btn.dataset.tab === tabId);
+      if (match) match.classList.add('active');
     }
 
-    if (obsFilters.search) {
-      const haystack = [
-        o._type,
-        o._desc,
-        o._area,
-        o._observer
-      ].join(" ").toLowerCase();
-      if (!haystack.includes(obsFilters.search)) return false;
+    // lazy-load heavy iframe
+    if (tabId === 'TasksTab') {
+      initTasksIframe();
     }
-
-    return true;
-  });
-
-  if (!filteredObservations.length) {
-    emptyEl.style.display = "block";
-    listEl.innerHTML = `
-      <div class="obs-empty-message">
-        <i class="fas fa-info-circle"></i>
-        <p>No observations match the selected filters.</p>
-      </div>`;
-    return;
   }
 
-  emptyEl.style.display = "none";
-  listEl.innerHTML = filteredObservations
-    .map(o => {
-      const riskClass = o._raLevel ? o._raLevel.toLowerCase() : "unknown";
-      const statusClass = o._status ? o._status.toLowerCase().replace(/\s+/g, "-") : "unknown";
-      return `
-        <div class="obs-card">
-          <div class="obs-card-header">
-            <span class="obs-card-date">${o.Date || ""}</span>
-            <span class="obs-status ${"status-" + statusClass}">${o._status || "Status?"}</span>
-          </div>
-          <div class="obs-card-body">
-            <div class="obs-type">${o._type || "Observation"}</div>
-            <div class="obs-desc">${o._desc || ""}</div>
-          </div>
-          <div class="obs-card-footer">
-            <span class="obs-chip risk-${riskClass}">${o._raLevel || "RA Level"}</span>
-            <span class="obs-chip">${o._area || ""}</span>
-            <span class="obs-chip">${o._observer || ""}</span>
-          </div>
-        </div>`;
-    })
-    .join("");
-}
+  // expose for inline onclick (just in case)
+  window.openTab = openTab;
 
-// ====== EMPLOYEE OF MONTH + LEADERBOARD ======
-function fetchEOMData() {
-  const url = window.EOM_SHEET_URL;
-  if (!url) return;
+  function setupNav() {
+    $all('.nav-button').forEach(btn => {
+      const tabId = btn.dataset.tab;
+      if (!tabId) return;
+      btn.addEventListener('click', e => openTab(e, tabId));
+    });
+    // default
+    openTab(null, 'HomeTab');
+  }
 
-  fetch(url)
-    .then(res => {
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      return res.text();
-    })
-    .then(csvText => {
-      const rows = csvText.replace(/\r/g, "").split("\n").slice(1); // skip header
-      leaderboardData = [];
-      let maxPoints = -1;
-      let topEmployee = "";
+  // -------------------- Accordions --------------------
 
-      rows.forEach(row => {
-        if (row.trim() === "") return;
-        const cols = row.split(",").map(col => col.replace(/["']/g, "").trim());
-        const name = cols[0] || "";
-        const points = parseFloat(cols[1]);
-        const color = cols[2] || "";
-
-        if (!monthColorFromSheet && color) {
-          monthColorFromSheet = color;
-        }
-
-        if (name) {
-          const p = !isNaN(points) ? points : 0;
-          leaderboardData.push({ name, points: p });
-          if (p > maxPoints) {
-            maxPoints = p;
-            topEmployee = name;
-          }
+  function setupAccordions() {
+    $all('.accordion').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+        const panel = btn.nextElementSibling;
+        if (!panel) return;
+        if (panel.style.maxHeight) {
+          panel.style.maxHeight = null;
+        } else {
+          panel.style.maxHeight = panel.scrollHeight + 'px';
         }
       });
+    });
+  }
 
-      const eomEl = safeGet("employeeOfMonth");
-      if (eomEl) eomEl.textContent = topEmployee || "No data (check sheet)";
+  // -------------------- Modals --------------------
 
-      const colorEl = safeGet("colorName");
-      if (colorEl) {
-        const displayColor = monthColorFromSheet || colorEl.textContent || "White";
-        colorEl.textContent = displayColor;
-        // try to set text color if looks like a real color
-        if (/^[a-zA-Z]+$/.test(displayColor)) {
-          colorEl.style.color = displayColor.toLowerCase();
+  function showLeaderboardModal() {
+    const modal = $('#leaderboardModal');
+    if (modal) modal.classList.add('show');
+  }
+
+  function hideLeaderboardModal() {
+    const modal = $('#leaderboardModal');
+    if (modal) modal.classList.remove('show');
+  }
+
+  function showEmergencyContactsModal() {
+    const modal = $('#emergencyContactsModal');
+    if (modal) modal.classList.add('show');
+  }
+
+  function hideEmergencyContactsModal() {
+    const modal = $('#emergencyContactsModal');
+    if (modal) modal.classList.remove('show');
+  }
+
+  window.showLeaderboardModal = showLeaderboardModal;
+  window.hideLeaderboardModal = hideLeaderboardModal;
+  window.showEmergencyContactsModal = showEmergencyContactsModal;
+  window.hideEmergencyContactsModal = hideEmergencyContactsModal;
+
+  function setupModals() {
+    $all('.modal').forEach(modal => {
+      modal.addEventListener('click', e => {
+        if (e.target === modal) {
+          modal.classList.remove('show');
+        }
+      });
+    });
+  }
+
+  // -------------------- Dark / light mode --------------------
+
+  function applyDarkMode(dark) {
+    const body = document.body;
+    const modeIcon = $('#modeIcon');
+    state.darkMode = dark;
+    if (dark) {
+      body.classList.add('dark-mode');
+      if (modeIcon) modeIcon.className = 'fas fa-sun';
+    } else {
+      body.classList.remove('dark-mode');
+      if (modeIcon) modeIcon.className = 'fas fa-moon';
+    }
+    try {
+      localStorage.setItem('safetyAppDarkMode', dark ? '1' : '0');
+    } catch (_) {}
+  }
+
+  function toggleDarkMode() {
+    applyDarkMode(!state.darkMode);
+  }
+
+  window.toggleDarkMode = toggleDarkMode;
+
+  function setupDarkMode() {
+    let stored = null;
+    try {
+      stored = localStorage.getItem('safetyAppDarkMode');
+    } catch (_) {}
+    if (stored === '1') {
+      applyDarkMode(true);
+    } else {
+      applyDarkMode(false);
+    }
+    const toggle = $('.mode-toggle');
+    if (toggle) {
+      toggle.addEventListener('click', toggleDarkMode);
+    }
+  }
+
+  // -------------------- GPS helper --------------------
+
+  function getGPSLocation() {
+    const resultEl = $('#locationResult');
+    if (!navigator.geolocation) {
+      if (resultEl) {
+        resultEl.textContent = 'Geolocation not supported on this device.';
+      }
+      return;
+    }
+
+    if (resultEl) {
+      resultEl.textContent = 'Getting location...';
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const { latitude, longitude } = pos.coords;
+        const link = `https://maps.google.com/?q=${latitude},${longitude}`;
+        if (resultEl) {
+          resultEl.innerHTML = `
+            <strong>Location:</strong> ${latitude.toFixed(5)}, ${longitude.toFixed(5)}
+            <br><a href="${link}" target="_blank">Open in Google Maps</a>
+          `;
+        }
+      },
+      err => {
+        if (resultEl) {
+          resultEl.textContent = 'Unable to get location: ' + err.message;
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+  window.getGPSLocation = getGPSLocation;
+
+  // -------------------- EOM + Leaderboard --------------------
+
+  async function loadEomAndLeaderboard() {
+    const url = window.EOM_SHEET_URL;
+    const eomNameEl = $('#employeeOfMonth');
+    const colorNameEl = $('#colorName');
+    const leaderboardMini = $('#homeLeaderboardMini');
+    const leaderboardContainer = $('#leaderboardContainer');
+
+    if (!url) {
+      if (eomNameEl) eomNameEl.textContent = 'Configure EOM_SHEET_URL in js/data.js';
+      if (colorNameEl) colorNameEl.textContent = '--';
+      if (leaderboardMini) leaderboardMini.textContent = 'No leaderboard data.';
+      if (leaderboardContainer) leaderboardContainer.textContent = 'No leaderboard data.';
+      return;
+    }
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      const rows = parseCSV(text);
+      if (!rows.length) throw new Error('Empty sheet');
+
+      const headers = rows[0];
+      const body = rows.slice(1).filter(r => r.some(c => c && c.trim() !== ''));
+
+      if (!body.length) throw new Error('No data rows');
+
+      const idxMonth = findColumnIndex(headers, ['Month', 'Period']);
+      const idxColor = findColumnIndex(headers, ['Color', 'Color Code']);
+      const idxEomName = findColumnIndex(headers, ['Employee', 'Employee of Month', 'Name']);
+      const idxPoints = findColumnIndex(headers, ['Points', 'Score']);
+
+      // first non-empty row is current month (you can adjust in sheet)
+      const current = body[0];
+
+      const eomName = idxEomName !== -1 ? current[idxEomName] : '';
+      const color = idxColor !== -1 ? current[idxColor] : '';
+      if (eomNameEl) eomNameEl.textContent = eomName || 'Not set';
+      if (colorNameEl) colorNameEl.textContent = color || '--';
+
+      // Build leaderboard from sheet rows (top 10)
+      const leaderboardItems = body.slice(0, 10).map(row => {
+        return {
+          name: idxEomName !== -1 ? row[idxEomName] : row[0],
+          points: idxPoints !== -1 ? row[idxPoints] : ''
+        };
+      }).filter(p => p.name);
+
+      if (leaderboardMini) {
+        if (!leaderboardItems.length) {
+          leaderboardMini.textContent = 'No leaderboard data.';
+        } else {
+          leaderboardMini.innerHTML = leaderboardItems
+            .slice(0, 3)
+            .map((p, i) =>
+              `<div class="leaderboard-mini-item">
+                 <span class="rank">#${i + 1}</span>
+                 <span class="name">${p.name}</span>
+                 <span class="points">${p.points || ''}</span>
+               </div>`
+            ).join('');
         }
       }
 
-      // update home mini leaderboard if available
-      renderLeaderboardMini();
-    })
-    .catch(err => {
-      console.error("Error fetching EOM/leaderboard:", err);
-      const eomEl = safeGet("employeeOfMonth");
-      if (eomEl) eomEl.textContent = "Error loading data (link check)";
-      const container = safeGet("leaderboardContainer");
-      if (container) {
-        container.innerHTML = `<p class="empty-note">Failed to load leaderboard data.</p>`;
+      if (leaderboardContainer) {
+        if (!leaderboardItems.length) {
+          leaderboardContainer.textContent = 'No leaderboard data.';
+        } else {
+          leaderboardContainer.innerHTML = leaderboardItems
+            .map((p, i) =>
+              `<div class="leaderboard-row">
+                 <span class="rank">#${i + 1}</span>
+                 <span class="name">${p.name}</span>
+                 <span class="points">${p.points || ''}</span>
+               </div>`
+            ).join('');
+        }
       }
-    });
-}
-
-function renderLeaderboard() {
-  const container = safeGet("leaderboardContainer");
-  if (!container) return;
-  if (!leaderboardData.length) {
-    container.innerHTML = `<p class="empty-note">No leaderboard data yet.</p>`;
-    return;
-  }
-  const sorted = [...leaderboardData].sort((a, b) => b.points - a.points);
-  container.innerHTML = `
-    <table class="leaderboard-table">
-      <thead>
-        <tr><th>#</th><th>Name</th><th>Points</th></tr>
-      </thead>
-      <tbody>
-        ${sorted
-          .map(
-            (row, idx) => `
-              <tr>
-                <td>${idx + 1}</td>
-                <td>${row.name}</td>
-                <td>${row.points}</td>
-              </tr>`
-          )
-          .join("")}
-      </tbody>
-    </table>`;
-}
-
-function renderLeaderboardMini() {
-  const container = safeGet("homeLeaderboardMini");
-  if (!container) return;
-  if (!leaderboardData.length) {
-    container.innerHTML = `<p class="empty-note">No leaderboard data.</p>`;
-    return;
-  }
-  const sorted = [...leaderboardData].sort((a, b) => b.points - a.points).slice(0, 3);
-  container.innerHTML = `
-    <ol class="mini-leaderboard">
-      ${sorted
-        .map(
-          (row, idx) => `
-            <li>
-              <span class="position">${idx + 1}</span>
-              <span class="name">${row.name}</span>
-              <span class="points">${row.points}</span>
-            </li>`
-        )
-        .join("")}
-    </ol>`;
-}
-
-// ====== TOOLS TAB (KPI / HEAT / WIND) ======
-function switchTool(tool) {
-  const kpiSection = safeGet("kpiSection");
-  const heatSection = safeGet("heatStressSection");
-  const windSection = safeGet("windSpeedSection");
-  const buttons = document.querySelectorAll(".tool-toggle-btn");
-
-  if (kpiSection) kpiSection.style.display = tool === "kpi" ? "block" : "none";
-  if (heatSection) heatSection.style.display = tool === "heat" ? "block" : "none";
-  if (windSection) windSection.style.display = tool === "wind" ? "block" : "none";
-
-  buttons.forEach(btn => {
-    if (btn.dataset.tool === tool) {
-      btn.classList.add("active-tool");
-    } else {
-      btn.classList.remove("active-tool");
+    } catch (err) {
+      console.error('EOM/Leaderboard error:', err);
+      if (eomNameEl) eomNameEl.textContent = 'Error loading data';
+      if (colorNameEl) colorNameEl.textContent = '--';
+      if (leaderboardMini) leaderboardMini.textContent = 'Error loading leaderboard.';
+      if (leaderboardContainer) leaderboardContainer.textContent = 'Error loading leaderboard.';
     }
-  });
-}
-window.switchTool = switchTool;
-
-// KPI placeholders – you can customise later
-function initKpiSection() {
-  const container = safeGet("kpiListContainer");
-  if (!container) return;
-  container.innerHTML = `
-    <div class="kpi-hint">
-      Configure your KPI formulas in this section later.
-      For now this is a static placeholder so the layout stays nice.
-    </div>`;
-}
-
-// Heat index calculation (simple formula)
-function calculateHeatIndex() {
-  const tInput = safeGet("inputTemp");
-  const hInput = safeGet("inputHumidity");
-  if (!tInput || !hInput) return;
-
-  const t = parseFloat(tInput.value);
-  const rh = parseFloat(hInput.value);
-  const valueEl = safeGet("heatIndexValue");
-  const levelEl = safeGet("heatRiskLevel");
-  const listEl = safeGet("heatRecommendationsList");
-
-  if (isNaN(t) || isNaN(rh)) {
-    if (valueEl) valueEl.textContent = "--";
-    if (levelEl) levelEl.textContent = "--";
-    if (listEl) listEl.innerHTML = "<li>Enter temperature and humidity to see results.</li>";
-    return;
   }
 
-  // NOAA approximation in °F, then convert back to °C
-  const T = t * 9 / 5 + 32;
-  const HI_F =
-    -42.379 + 2.04901523 * T + 10.14333127 * rh
-    - 0.22475541 * T * rh - 6.83783e-3 * T * T
-    - 5.481717e-2 * rh * rh + 1.22874e-3 * T * T * rh
-    + 8.5282e-4 * T * rh * rh - 1.99e-6 * T * T * rh * rh;
-  const HI_C = (HI_F - 32) * 5 / 9;
+  // -------------------- TBT of the day + TBT/JSA libraries --------------------
 
-  let level = "";
-  let tips = [];
-  if (HI_C < 27) {
-    level = "Caution";
-    tips = ["Monitor workers", "Encourage hydration"];
-  } else if (HI_C < 32) {
-    level = "Extreme Caution";
-    tips = ["Increase water breaks", "Watch for heat stress symptoms"];
-  } else if (HI_C < 41) {
-    level = "Danger";
-    tips = ["Limit heavy work", "Schedule more frequent breaks", "Monitor vulnerable workers closely"];
-  } else {
-    level = "Extreme Danger";
-    tips = ["Consider stopping non-essential work", "Medical support must be available"];
+  function pickTbtOfDay(list) {
+    if (!list || !list.length) return null;
+    const today = new Date();
+    const start = new Date(today.getFullYear(), 0, 0);
+    const diff = today - start;
+    const oneDay = 1000 * 60 * 60 * 24;
+    const dayOfYear = Math.floor(diff / oneDay);
+    const index = dayOfYear % list.length;
+    return list[index];
   }
 
-  if (valueEl) valueEl.textContent = HI_C.toFixed(1) + "°C HI";
-  if (levelEl) levelEl.textContent = level;
-  if (listEl) {
-    listEl.innerHTML = tips.map(tip => `<li>${tip}</li>`).join("");
+  function setupTbtOfDay() {
+    const list = Array.isArray(window.tbtData) ? window.tbtData : [];
+    const tbtSection = $('#homeTbtSection');
+    const tbtContent = $('#homeTbtContent');
+    const tbtPanel = $('#tbtPanel');
+
+    if (!list.length) {
+      if (tbtContent) tbtContent.textContent = 'No TBT data configured. Add items in js/data.js.';
+      if (tbtPanel) tbtPanel.textContent = 'No TBT data configured.';
+      return;
+    }
+
+    const todayTbt = pickTbtOfDay(list);
+    if (tbtContent && todayTbt) {
+      tbtContent.innerHTML = `
+        <div class="tbt-title">${todayTbt.title}</div>
+        <a href="${todayTbt.link}" class="tbt-link" target="_blank">Open TBT document</a>
+      `;
+    }
+
+    if (tbtPanel) {
+      tbtPanel.innerHTML = list.map(item => `
+        <div class="tbt-item">
+          <i class="fas fa-book-open"></i>
+          <a href="${item.link}" target="_blank">${item.title}</a>
+        </div>
+      `).join('');
+    }
   }
 
-  // also mirror a compact summary in Home tab if exists
-  const homeHeat = safeGet("homeHeatSummary");
-  if (homeHeat) homeHeat.textContent = `${level} (${HI_C.toFixed(0)}°C HI)`;
-}
-window.calculateHeatIndex = calculateHeatIndex;
+  function setupTbtLibrary() {
+    const list = Array.isArray(window.tbtData) ? window.tbtData : [];
+    const container = $('#tbtLibraryList');
+    if (!container) return;
 
-function calculateWindSafety() {
-  const wInput = safeGet("inputWind");
-  if (!wInput) return;
-  const v = parseFloat(wInput.value);
-  const valueEl = safeGet("windValue");
-  const levelEl = safeGet("windRiskLevel");
-  const listEl = safeGet("windRecommendationsList");
+    if (!list.length) {
+      container.textContent = 'No TBT items found.';
+      return;
+    }
 
-  if (isNaN(v)) {
-    if (valueEl) valueEl.textContent = "--";
-    if (levelEl) levelEl.textContent = "--";
-    if (listEl) listEl.innerHTML = "<li>Enter wind speed to see limits.</li>";
-    return;
+    container.innerHTML = list.map(item => `
+      <div class="library-item">
+        <i class="fas fa-book-open"></i>
+        <a href="${item.link}" target="_blank">${item.title}</a>
+      </div>
+    `).join('');
   }
 
-  let level = "";
-  let tips = [];
-  if (v < 25) {
-    level = "Safe";
-    tips = ["Normal lifting allowed", "Monitor for gusts"];
-  } else if (v < 38) {
-    level = "Caution";
-    tips = ["Review crane charts", "Restrict large surfaces", "Stop manbasket if gusty"];
-  } else if (v < 45) {
-    level = "High Risk";
-    tips = ["Stop non-essential lifting", "Engineer review required"];
-  } else {
-    level = "Stop Work";
-    tips = ["Stop all crane & manbasket operations"];
-  }
+  function setupJsaLibrary() {
+    const list = Array.isArray(window.jsaData) ? window.jsaData : [];
+    const container = $('#jsaListContainer');
+    const search = $('#jsaSearch');
+    if (!container) return;
 
-  if (valueEl) valueEl.textContent = v.toFixed(1) + " km/h";
-  if (levelEl) levelEl.textContent = level;
-  if (listEl) {
-    listEl.innerHTML = tips.map(tip => `<li>${tip}</li>`).join("");
-  }
+    function render(filter) {
+      const q = (filter || '').toLowerCase();
+      const filtered = list.filter(j =>
+        !q || (j.title && j.title.toLowerCase().includes(q))
+      );
 
-  const homeWind = safeGet("homeWindSummary");
-  if (homeWind) homeWind.textContent = `${level} (${v.toFixed(0)} km/h)`;
-}
-window.calculateWindSafety = calculateWindSafety;
-
-// ====== NEWS / ANNOUNCEMENTS ======
-function loadNews() {
-  const url = window.NEWS_SHEET_CSV_URL;
-  const container = safeGet("AnnouncementsContainer");
-  const loading = safeGet("newsLoading");
-  if (!url || !container) return;
-
-  fetch(url)
-    .then(res => {
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      return res.text();
-    })
-    .then(text => {
-      if (loading) loading.style.display = "none";
-      const rows = parseCSV(text);
-      if (!rows.length) {
-        container.innerHTML = `<p class="empty-note">No news configured.</p>`;
+      if (!filtered.length) {
+        container.textContent = 'No JSA found for this search.';
         return;
       }
-      const headers = rows[0].map(h => h.trim().toLowerCase());
-      const dateIdx = headers.findIndex(h => h === "date");
-      const titleIdx = headers.findIndex(h => h === "title");
-      const typeIdx = headers.findIndex(h => h === "type");
-      const msgIdx = headers.findIndex(h => h === "message" || h === "description");
-      const linkIdx = headers.findIndex(h => h === "link");
 
-      container.innerHTML = rows.slice(1).map(row => {
-        const date = dateIdx >= 0 ? (row[dateIdx] || "").trim() : "";
-        const title = titleIdx >= 0 ? (row[titleIdx] || "").trim() : "Announcement";
-        const type = typeIdx >= 0 ? (row[typeIdx] || "").trim() : "";
-        const msg = msgIdx >= 0 ? (row[msgIdx] || "").trim() : "";
-        const link = linkIdx >= 0 ? (row[linkIdx] || "").trim() : "";
+      container.innerHTML = filtered.map(item => `
+        <div class="library-item">
+          <i class="fas fa-clipboard-list"></i>
+          <a href="${item.link}" target="_blank">${item.title}</a>
+        </div>
+      `).join('');
+    }
 
-        const typeIcon = type.toLowerCase().includes("alert") ? "fa-triangle-exclamation"
-          : type.toLowerCase().includes("event") ? "fa-calendar-day"
-          : "fa-bullhorn";
+    if (!list.length) {
+      container.textContent = 'No JSA found.';
+      return;
+    }
+
+    render('');
+
+    if (search) {
+      search.addEventListener('input', () => {
+        render(search.value);
+      });
+    }
+  }
+
+  // -------------------- Tools (KPI / Heat / Wind) --------------------
+
+  // Heat index formula: convert C to F, apply NOAA formula, back to C
+  function calculateHeatIndexC(tempC, humidity) {
+    if (tempC == null || humidity == null) return null;
+    const T = tempC * 9 / 5 + 32;
+    const R = humidity;
+
+    const HI =
+      -42.379 +
+      2.04901523 * T +
+      10.14333127 * R -
+      0.22475541 * T * R -
+      0.00683783 * T * T -
+      0.05481717 * R * R +
+      0.00122874 * T * T * R +
+      0.00085282 * T * R * R -
+      0.00000199 * T * T * R * R;
+
+    const C = (HI - 32) * 5 / 9;
+    return C;
+  }
+
+  function classifyHeatRisk(heatIndexC) {
+    if (heatIndexC == null || isNaN(heatIndexC)) return { label: '--', level: 'unknown' };
+    if (heatIndexC < 27) return { label: 'Safe', level: 'safe' };
+    if (heatIndexC < 32) return { label: 'Caution', level: 'caution' };
+    if (heatIndexC < 41) return { label: 'Extreme Caution', level: 'warning' };
+    if (heatIndexC < 54) return { label: 'Danger', level: 'danger' };
+    return { label: 'Extreme Danger', level: 'extreme' };
+  }
+
+  function classifyWindRisk(speed) {
+    if (speed == null || isNaN(speed)) return { label: '--', level: 'unknown' };
+    if (speed < 25) return { label: 'Safe for normal work', level: 'safe' };
+    if (speed < 38) return { label: 'Caution – monitor cranes & manlifts', level: 'caution' };
+    if (speed < 45) return { label: 'High risk – limit lifting operations', level: 'warning' };
+    return { label: 'Stop crane / manbasket operations', level: 'danger' };
+  }
+
+  function calculateHeatIndex() {
+    const tempInput = $('#inputTemp');
+    const humInput = $('#inputHumidity');
+    const valueEl = $('#heatIndexValue');
+    const levelEl = $('#heatRiskLevel');
+    const listEl = $('#heatRecommendationsList');
+    const homeHeat = $('#homeHeatSummary');
+
+    if (!tempInput || !humInput || !valueEl || !levelEl || !listEl) return;
+
+    const t = parseFloat(tempInput.value);
+    const h = parseFloat(humInput.value);
+    const heatC = calculateHeatIndexC(t, h);
+    const risk = classifyHeatRisk(heatC);
+
+    if (heatC == null || isNaN(heatC)) {
+      valueEl.textContent = '--';
+      levelEl.textContent = '--';
+      listEl.innerHTML = '<li>Enter temperature and humidity to see results.</li>';
+      if (homeHeat) homeHeat.textContent = '--';
+      return;
+    }
+
+    const rounded = Math.round(heatC);
+    valueEl.textContent = `${rounded}°C HI`;
+    levelEl.textContent = risk.label;
+    levelEl.className = 'heat-category ' + risk.level;
+
+    let rec = '';
+    switch (risk.level) {
+      case 'safe':
+        rec = 'Normal work, basic hydration & regular breaks.';
+        break;
+      case 'caution':
+        rec = 'Increase water breaks, monitor workers, provide shade.';
+        break;
+      case 'warning':
+        rec = 'Frequent breaks, shorten work periods, buddy system.';
+        break;
+      case 'danger':
+        rec = 'Only critical work with permit, strict controls.';
+        break;
+      case 'extreme':
+        rec = 'Stop outdoor work except for life-saving activities.';
+        break;
+    }
+    listEl.innerHTML = `<li>${rec}</li>`;
+
+    if (homeHeat) {
+      homeHeat.textContent = `${risk.label} (${rounded}°C HI)`;
+      state.lastHeatSummary = homeHeat.textContent;
+    }
+  }
+  window.calculateHeatIndex = calculateHeatIndex;
+
+  function calculateWindSafety() {
+    const windInput = $('#inputWind');
+    const valueEl = $('#windValue');
+    const levelEl = $('#windRiskLevel');
+    const listEl = $('#windRecommendationsList');
+    const homeWind = $('#homeWindSummary');
+
+    if (!windInput || !valueEl || !levelEl || !listEl) return;
+
+    const v = parseFloat(windInput.value);
+    const risk = classifyWindRisk(v);
+
+    if (v == null || isNaN(v)) {
+      valueEl.textContent = '--';
+      levelEl.textContent = '--';
+      listEl.innerHTML = '<li>Enter wind speed to see limits.</li>';
+      if (homeWind) homeWind.textContent = '--';
+      return;
+    }
+
+    valueEl.textContent = `${v.toFixed(0)} km/h`;
+    levelEl.textContent = risk.label;
+    levelEl.className = 'wind-category ' + risk.level;
+
+    let rec = '';
+    switch (risk.level) {
+      case 'safe':
+        rec = 'Normal operations allowed.';
+        break;
+      case 'caution':
+        rec = 'Check CSM limits. Monitor cranes & MEWP.';
+        break;
+      case 'warning':
+        rec = 'Review work permits. Consider suspending critical lifts.';
+        break;
+      case 'danger':
+        rec = 'Stop crane / manbasket / heavy lifts.';
+        break;
+    }
+    listEl.innerHTML = `<li>${rec}</li>`;
+
+    if (homeWind) {
+      homeWind.textContent = `Safe (${v.toFixed(0)} km/h)`;
+      state.lastWindSummary = homeWind.textContent;
+    }
+  }
+  window.calculateWindSafety = calculateWindSafety;
+
+  function setupTools() {
+    const kpiBtn = document.querySelector('[data-tool="kpi"]');
+    const heatBtn = document.querySelector('[data-tool="heat"]');
+    const windBtn = document.querySelector('[data-tool="wind"]');
+    const kpiSection = $('#kpiSection');
+    const heatSection = $('#heatStressSection');
+    const windSection = $('#windSpeedSection');
+
+    function setActive(tool) {
+      [kpiBtn, heatBtn, windBtn].forEach(btn => btn && btn.classList.remove('active-tool'));
+      if (tool === 'kpi' && kpiBtn) kpiBtn.classList.add('active-tool');
+      if (tool === 'heat' && heatBtn) heatBtn.classList.add('active-tool');
+      if (tool === 'wind' && windBtn) windBtn.classList.add('active-tool');
+
+      if (kpiSection) kpiSection.style.display = tool === 'kpi' ? 'block' : 'none';
+      if (heatSection) heatSection.style.display = tool === 'heat' ? 'block' : 'none';
+      if (windSection) windSection.style.display = tool === 'wind' ? 'block' : 'none';
+    }
+
+    if (kpiBtn) kpiBtn.addEventListener('click', () => setActive('kpi'));
+    if (heatBtn) heatBtn.addEventListener('click', () => setActive('heat'));
+    if (windBtn) windBtn.addEventListener('click', () => setActive('wind'));
+
+    // expose for old inline onclick, if it exists
+    window.switchTool = setActive;
+
+    // default
+    setActive('kpi');
+  }
+
+  // -------------------- Observations (CSV) --------------------
+
+  async function loadObservations() {
+    const url = window.OBSERVATIONS_SHEET_CSV_URL;
+    const emptyState = $('#observationsEmptyState');
+    if (!url) {
+      if (emptyState) {
+        emptyState.style.display = 'block';
+        emptyState.querySelector('p').textContent =
+          'No observations sheet configured. Set OBSERVATIONS_SHEET_CSV_URL in js/data.js.';
+      }
+      return;
+    }
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      const rows = parseCSV(text);
+      if (!rows.length) throw new Error('Empty sheet');
+
+      const headers = rows[0];
+      const body = rows.slice(1).filter(r => r.some(c => c && c.trim() !== ''));
+
+      const idxDate = findColumnIndex(headers, ['Date']);
+      const idxName = findColumnIndex(headers, ['Name', 'Observer', 'Reported By']);
+      const idxRaLevel = findColumnIndex(headers, ['RA Level', 'Risk Level']);
+      const idxStatus = findColumnIndex(headers, ['Report Status', 'Status']);
+      const idxArea = findColumnIndex(headers, ['Area', 'Location']);
+      const idxType = findColumnIndex(headers, ['Activity Type', 'Observation Types', 'Observation Type']);
+      const idxClass = findColumnIndex(headers, ['Observation Class']);
+      const idxDesc = findColumnIndex(headers, ['Description', 'Details']);
+
+      const observations = body.map(row => {
+        const dateRaw = idxDate !== -1 ? row[idxDate] : '';
+        const date = parseSheetDate(dateRaw);
+        return {
+          date,
+          dateRaw,
+          reporter: idxName !== -1 ? (row[idxName] || '') : '',
+          raLevel: idxRaLevel !== -1 ? (row[idxRaLevel] || '') : '',
+          status: idxStatus !== -1 ? (row[idxStatus] || '') : '',
+          area: idxArea !== -1 ? (row[idxArea] || '') : '',
+          type: idxType !== -1 ? (row[idxType] || '') : '',
+          obsClass: idxClass !== -1 ? (row[idxClass] || '') : '',
+          description: idxDesc !== -1 ? (row[idxDesc] || '') : ''
+        };
+      });
+
+      state.observations = observations;
+      state.observationsLoaded = true;
+
+      updateHomeFromObservations();
+      setupObservationsFilters();
+      renderObservationsList();
+    } catch (err) {
+      console.error('Observations load error:', err);
+      const list = $('#observationsList');
+      if (list) list.innerHTML = '';
+      if (emptyState) emptyState.style.display = 'block';
+    }
+  }
+
+  function updateHomeFromObservations() {
+    const obs = state.observations;
+    if (!obs.length) return;
+    const today = startOfDay(new Date());
+
+    const todayObs = obs.filter(o => o.date && isSameDay(o.date, today));
+    const observersToday = new Set(todayObs.map(o => o.reporter).filter(Boolean)).size;
+    const highRiskOpen = obs.filter(o => {
+      const level = (o.raLevel || '').toLowerCase();
+      const status = (o.status || '').toLowerCase();
+      return level.includes('high') && !status.includes('close');
+    }).length;
+
+    const observersEl = $('#homeObserversToday');
+    const obsTodayEl = $('#homeObservationsToday');
+    const highRiskEl = $('#homeHighRiskOpen');
+
+    if (observersEl) observersEl.textContent = observersToday || '--';
+    if (obsTodayEl) obsTodayEl.textContent = todayObs.length || '--';
+    if (highRiskEl) highRiskEl.textContent = highRiskOpen || '0';
+  }
+
+  function filterObservationsForRange(list, range) {
+    if (!range || range === 'all') return list.slice();
+    const today = startOfDay(new Date());
+
+    return list.filter(o => {
+      if (!o.date) return false;
+      if (range === 'today') return isSameDay(o.date, today);
+      if (range === 'week') return Math.abs(daysBetween(o.date, today)) <= 7;
+      if (range === 'month') return isSameMonth(o.date, today);
+      return true;
+    });
+  }
+
+  function updateObservationsSummary() {
+    const obs = state.observations;
+    const monthObs = filterObservationsForRange(obs, 'month');
+
+    const openCount = monthObs.filter(o =>
+      (o.status || '').toLowerCase().includes('open') ||
+      (o.status || '').toLowerCase().includes('progress')
+    ).length;
+
+    const closedCount = monthObs.filter(o =>
+      (o.status || '').toLowerCase().includes('close')
+    ).length;
+
+    const thisMonthEl = $('#obsCountMonth');
+    const openEl = $('#obsCountOpen');
+    const closedEl = $('#obsCountClosed');
+
+    if (thisMonthEl) thisMonthEl.textContent = monthObs.length || '0';
+    if (openEl) openEl.textContent = openCount || '0';
+    if (closedEl) closedEl.textContent = closedCount || '0';
+  }
+
+  function setupObservationsFilters() {
+    const rangeButtons = $all('.obs-filter-chip');
+    const riskSelect = $('#obsFilterRisk');
+    const statusSelect = $('#obsFilterStatus');
+    const searchInput = $('#obsSearch');
+
+    rangeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        rangeButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        obsFilterState.range = btn.dataset.range || 'today';
+        renderObservationsList();
+      });
+    });
+
+    if (riskSelect) {
+      riskSelect.addEventListener('change', () => {
+        obsFilterState.risk = riskSelect.value || '';
+        renderObservationsList();
+      });
+    }
+    if (statusSelect) {
+      statusSelect.addEventListener('change', () => {
+        obsFilterState.status = statusSelect.value || '';
+        renderObservationsList();
+      });
+    }
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        obsFilterState.search = searchInput.value.toLowerCase();
+        renderObservationsList();
+      });
+    }
+
+    const openSheetBtn = $('#openSheetButton');
+    if (openSheetBtn) {
+      openSheetBtn.addEventListener('click', () => {
+        const url = window.OBSERVATIONS_FULL_SHEET_URL || window.OBSERVATIONS_SHEET_CSV_URL;
+        if (url) window.open(url, '_blank');
+      });
+    }
+  }
+
+  function renderObservationsList() {
+    const listEl = $('#observationsList');
+    const emptyState = $('#observationsEmptyState');
+    if (!listEl) return;
+
+    let obs = state.observations || [];
+    if (!obs.length) {
+      listEl.innerHTML = `
+        <div class="obs-empty">
+          <i class="fas fa-info-circle"></i>
+          <p>No observations loaded yet.</p>
+        </div>
+      `;
+      if (emptyState) emptyState.style.display = 'block';
+      updateObservationsSummary();
+      return;
+    }
+
+    if (emptyState) emptyState.style.display = 'none';
+
+    // Apply filters
+    obs = filterObservationsForRange(obs, obsFilterState.range);
+
+    if (obsFilterState.risk) {
+      const r = obsFilterState.risk.toLowerCase();
+      obs = obs.filter(o => (o.raLevel || '').toLowerCase().includes(r));
+    }
+    if (obsFilterState.status) {
+      const s = obsFilterState.status.toLowerCase();
+      obs = obs.filter(o => (o.status || '').toLowerCase().includes(s));
+    }
+    if (obsFilterState.search) {
+      const q = obsFilterState.search;
+      obs = obs.filter(o => {
+        return (
+          (o.area || '').toLowerCase().includes(q) ||
+          (o.type || '').toLowerCase().includes(q) ||
+          (o.obsClass || '').toLowerCase().includes(q) ||
+          (o.reporter || '').toLowerCase().includes(q) ||
+          (o.description || '').toLowerCase().includes(q)
+        );
+      });
+    }
+
+    if (!obs.length) {
+      listEl.innerHTML = `
+        <div class="obs-empty">
+          <i class="fas fa-info-circle"></i>
+          <p>No observations match the selected filters.</p>
+        </div>
+      `;
+      updateObservationsSummary();
+      return;
+    }
+
+    const today = new Date();
+    const cardsHtml = obs.map(o => {
+      const risk = (o.raLevel || '').toLowerCase();
+      const status = (o.status || '').toLowerCase();
+
+      let riskClass = 'badge-neutral';
+      if (risk.includes('high')) riskClass = 'badge-high';
+      else if (risk.includes('medium')) riskClass = 'badge-medium';
+      else if (risk.includes('low')) riskClass = 'badge-low';
+
+      let statusClass = 'status-other';
+      if (status.includes('open') || status.includes('progress')) statusClass = 'status-open';
+      if (status.includes('close')) statusClass = 'status-closed';
+
+      const dateText = o.date
+        ? o.date.toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          })
+        : (o.dateRaw || '');
+
+      return `
+        <article class="obs-card">
+          <header class="obs-card-header">
+            <div class="obs-card-date">${dateText}</div>
+            <div class="obs-card-badges">
+              <span class="badge ${riskClass}">${o.raLevel || 'No RA'}</span>
+              <span class="status-pill ${statusClass}">${o.status || 'No status'}</span>
+            </div>
+          </header>
+          <div class="obs-card-body">
+            <div class="obs-main-line">
+              <span class="obs-type">${o.type || o.obsClass || 'Observation'}</span>
+              <span class="obs-area">${o.area || ''}</span>
+            </div>
+            <p class="obs-description">${o.description || ''}</p>
+          </div>
+          <footer class="obs-card-footer">
+            <span class="obs-reporter"><i class="fas fa-user"></i> ${o.reporter || 'Unknown'}</span>
+          </footer>
+        </article>
+      `;
+    }).join('');
+
+    listEl.innerHTML = cardsHtml;
+    updateObservationsSummary();
+  }
+
+  // -------------------- News --------------------
+
+  async function loadNews() {
+    const url = window.NEWS_SHEET_CSV_URL;
+    const container = $('#AnnouncementsContainer');
+    const loading = $('#newsLoading');
+
+    if (!container) return;
+
+    if (!url) {
+      container.innerHTML = '<p class="text-muted">Configure NEWS_SHEET_CSV_URL in js/data.js to load news.</p>';
+      return;
+    }
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      const rows = parseCSV(text);
+      if (!rows.length) throw new Error('Empty sheet');
+
+      const headers = rows[0];
+      const body = rows.slice(1).filter(r => r.some(c => c && c.trim() !== ''));
+
+      const idxDate = findColumnIndex(headers, ['Date']);
+      const idxTitle = findColumnIndex(headers, ['Title', 'Subject']);
+      const idxContent = findColumnIndex(headers, ['Content', 'Details', 'Body']);
+
+      if (loading) loading.style.display = 'none';
+
+      if (!body.length) {
+        container.innerHTML = '<p class="text-muted">No news found.</p>';
+        return;
+      }
+
+      container.innerHTML = body.map(row => {
+        const d = idxDate !== -1 ? (row[idxDate] || '') : '';
+        const t = idxTitle !== -1 ? (row[idxTitle] || '') : 'No Title';
+        const c = idxContent !== -1 ? (row[idxContent] || '') : 'No details.';
+        const isEmpty = !c || c === 'NULL';
 
         return `
-          <div class="news-card">
-            <button class="news-card-header">
-              <div class="news-title">
-                <i class="fas ${typeIcon}"></i>
-                <span>${title}</span>
-              </div>
-              <span class="news-date">${date}</span>
-            </button>
-            <div class="news-body">
-              <p>${msg}</p>
-              ${link ? `<a href="${link}" target="_blank">Open document</a>` : ""}
+          <div class="announcement-card">
+            <div class="card-date">${d}</div>
+            <div class="card-title${isEmpty ? '' : ' expandable'}">
+              ${t}
+              ${isEmpty ? '' : '<i class="fas fa-chevron-down toggle-icon"></i>'}
             </div>
-          </div>`;
-      }).join("");
-    })
-    .catch(err => {
-      console.error("Error loading news:", err);
-      if (loading) loading.style.display = "none";
-      if (container) container.innerHTML = `<p class="empty-note">Failed to load news. Check NEWS_SHEET_CSV_URL in js/data.js.</p>`;
-    });
-}
+            <div class="card-content"${isEmpty ? ' style="display:none;"' : ''}>${c}</div>
+          </div>
+        `;
+      }).join('');
 
-// ====== INITIALISATION ======
-function initApp() {
-  try {
-    initAccordions();
-    initJsaSearch();
-    initKpiSection();
-
-    // Google Forms / links from data.js
-    const tasksIframe = safeGet("tasksIframe");
-    if (tasksIframe && window.TASKS_FORM_EMBED_URL) {
-      tasksIframe.src = window.TASKS_FORM_EMBED_URL;
+      // expand / collapse details
+      $all('.announcement-card .card-title.expandable').forEach(titleEl => {
+        titleEl.addEventListener('click', () => {
+          const content = titleEl.nextElementSibling;
+          if (!content) return;
+          const icon = titleEl.querySelector('.toggle-icon');
+          const isOpen = content.style.display === 'block';
+          content.style.display = isOpen ? 'none' : 'block';
+          if (icon) icon.classList.toggle('rotated', !isOpen);
+        });
+      });
+    } catch (err) {
+      console.error('News load error:', err);
+      if (loading) loading.style.display = 'none';
+      container.innerHTML = `
+        <div class="announcement-card">
+          <div class="card-date">Error</div>
+          <div class="card-title">Failed to fetch news</div>
+          <div class="card-content" style="color:var(--danger-color);">
+            Check the NEWS_SHEET_CSV_URL link or your network connection.
+          </div>
+        </div>
+      `;
     }
-    const addBtn = safeGet("addObservationButton");
-    if (addBtn && window.ADD_OBSERVATION_FORM_URL) {
-      addBtn.href = window.ADD_OBSERVATION_FORM_URL;
-    }
+  }
 
-    loadTbtOfDay();
-    fetchEOMData();
+  // -------------------- Tasks iframe (lazy load) --------------------
+
+  let tasksIframeInitialized = false;
+
+  function initTasksIframe() {
+    if (tasksIframeInitialized) return;
+    const iframe = $('#tasksIframe');
+    if (!iframe) return;
+
+    // If src is already full URL we just mark as initialized.
+    if (iframe.dataset && iframe.dataset.src) {
+      iframe.src = iframe.dataset.src;
+    }
+    tasksIframeInitialized = true;
+  }
+
+  // -------------------- Floating Add Observation button --------------------
+
+  function setupAddObservationButton() {
+    const btn = $('#addObservationButton');
+    if (!btn) return;
+    // URL comes from js/data.js (ADD_OBSERVATION_FORM_URL), but we also
+    // left a fallback href in HTML. Here we just ensure it matches.
+    if (window.ADD_OBSERVATION_FORM_URL) {
+      btn.href = window.ADD_OBSERVATION_FORM_URL;
+    }
+  }
+
+  // -------------------- Init app --------------------
+
+  function initApp() {
+    setupDarkMode();
+    setupNav();
+    setupAccordions();
+    setupModals();
+    setupAddObservationButton();
+    setupTbtOfDay();
+    setupTbtLibrary();
+    setupJsaLibrary();
+    setupTools();
+    loadEomAndLeaderboard();
     loadObservations();
     loadNews();
 
-    // default to Home tab if it exists
-    const homeTab = safeGet("HomeTab");
-    if (homeTab) {
-      homeTab.classList.add("active");
-    }
-  } catch (e) {
-    console.error("Error during initApp:", e);
+    // If we already have summaries from tools, reflect in Home
+    const homeHeat = $('#homeHeatSummary');
+    const homeWind = $('#homeWindSummary');
+    if (homeHeat && state.lastHeatSummary) homeHeat.textContent = state.lastHeatSummary;
+    if (homeWind && state.lastWindSummary) homeWind.textContent = state.lastWindSummary;
   }
-}
 
-document.addEventListener("DOMContentLoaded", initApp);
+  document.addEventListener('DOMContentLoaded', initApp);
+})();
