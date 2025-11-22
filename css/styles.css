@@ -1,74 +1,64 @@
 /* =========================================================
-   SAFETY OBS APP – MODERN DASHBOARD THEME
-   Works with: index.html you shared (HomeTab, ObservationsTab, JSATab, etc.)
+   SAFETY OBS APP – CLEAN, SAFE THEME
+   (NO overlays, NO body flex, tabs stay clickable)
    ========================================================= */
 
 /* ---------- THEME VARIABLES ---------- */
 
 :root {
-  /* Light theme (default) */
-  --page-bg: #e8edf7;
+  /* Light (default) */
+  --page-bg: #e5edf8;
   --shell-bg: #f7f9fc;
 
   --card-bg: #ffffff;
-  --card-border: rgba(15, 23, 42, 0.08);
+  --card-border: rgba(148, 163, 184, 0.35);
 
   --header-gradient-start: #0f766e;
   --header-gradient-end: #0369a1;
 
-  --primary: #16a34a;        /* safety green */
-  --primary-soft: rgba(22, 163, 74, 0.12);
-  --accent: #f97316;         /* orange for highlights */
-  --accent-soft: rgba(249, 115, 22, 0.08);
+  --primary: #16a34a;     /* safety green */
+  --primary-soft: rgba(22, 163, 74, 0.1);
+  --accent: #f97316;      /* orange */
   --danger: #dc2626;
-  --danger-soft: rgba(220, 38, 38, 0.12);
   --info: #0284c7;
-  --muted: #64748b;
-  --muted-soft: #94a3b8;
 
   --text-main: #0f172a;
   --text-soft: #64748b;
 
   --nav-bg: #ffffff;
-  --nav-border: rgba(148, 163, 184, 0.5);
-  --nav-active: rgba(22, 163, 74, 0.08);
+  --nav-border: rgba(148, 163, 184, 0.6);
+  --nav-active-bg: rgba(22, 163, 74, 0.08);
 
-  --shadow-shell: 0 16px 40px rgba(15, 23, 42, 0.18);
-  --shadow-card: 0 10px 24px rgba(15, 23, 42, 0.1);
-  --shadow-fab: 0 14px 32px rgba(22, 163, 74, 0.45);
+  --shadow-shell: 0 16px 40px rgba(15, 23, 42, 0.16);
+  --shadow-card: 0 10px 22px rgba(15, 23, 42, 0.1);
 }
 
-/* Dark theme overrides – applied when body has .dark-mode */
+/* Dark mode: just change variables */
 body.dark-mode {
   --page-bg: #020617;
   --shell-bg: #020617;
 
   --card-bg: #0b1727;
-  --card-border: rgba(148, 163, 184, 0.3);
+  --card-border: rgba(148, 163, 184, 0.35);
 
   --header-gradient-start: #020617;
   --header-gradient-end: #020617;
 
   --primary: #22c55e;
-  --primary-soft: rgba(34, 197, 94, 0.24);
+  --primary-soft: rgba(34, 197, 94, 0.18);
   --accent: #fb923c;
-  --accent-soft: rgba(251, 146, 60, 0.18);
   --danger: #ef4444;
-  --danger-soft: rgba(248, 113, 113, 0.24);
   --info: #38bdf8;
-  --muted: #e5e7eb;
-  --muted-soft: #9ca3af;
 
   --text-main: #f9fafb;
   --text-soft: #cbd5f5;
 
   --nav-bg: #020617;
-  --nav-border: rgba(148, 163, 184, 0.5);
-  --nav-active: rgba(34, 197, 94, 0.18);
+  --nav-border: rgba(148, 163, 184, 0.7);
+  --nav-active-bg: rgba(34, 197, 94, 0.22);
 
   --shadow-shell: 0 18px 40px rgba(0, 0, 0, 0.8);
   --shadow-card: 0 14px 26px rgba(15, 23, 42, 0.95);
-  --shadow-fab: 0 18px 38px rgba(34, 197, 94, 0.55);
 }
 
 /* ---------- GLOBAL / LAYOUT ---------- */
@@ -81,9 +71,9 @@ body.dark-mode {
 
 html,
 body {
-  height: 100%;
   margin: 0;
   padding: 0;
+  height: 100%;
 }
 
 body {
@@ -91,55 +81,29 @@ body {
     sans-serif;
   background: var(--page-bg);
   color: var(--text-main);
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
 }
 
-/* soft background texture */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image: linear-gradient(
-      rgba(148, 163, 184, 0.08) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(148, 163, 184, 0.08) 1px,
-      transparent 1px
-    );
-  background-size: 28px 28px;
-  opacity: 0.15;
-  z-index: -2;
-}
-
-/* main shell */
+/* main shell – NO weird flex on body */
 .app-container {
-  max-width: 1120px;
-  width: 100%;
-  height: calc(100vh - 16px);
-  margin: 8px auto;
+  max-width: 1100px;
+  margin: 10px auto;
+  min-height: calc(100vh - 20px);
   background: var(--shell-bg);
-  border-radius: 26px;
+  border-radius: 22px;
   box-shadow: var(--shadow-shell);
   border: 1px solid rgba(15, 23, 42, 0.06);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  position: relative;
 }
 
 /* ---------- HEADER ---------- */
 
 .header {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 18px;
+  padding: 12px 16px;
   color: #f9fafb;
   background: linear-gradient(
     90deg,
@@ -148,27 +112,7 @@ body::before {
   );
 }
 
-.header::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-      circle at 0% 0%,
-      rgba(255, 255, 255, 0.18),
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 100% 100%,
-      rgba(15, 23, 42, 0.9),
-      transparent 50%
-    );
-  opacity: 0.45;
-  pointer-events: none;
-}
-
 .header > span {
-  position: relative;
-  z-index: 1;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -183,53 +127,29 @@ body::before {
   height: 10px;
   border-radius: 999px;
   background: #22c55e;
-  box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.4);
+  box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.4);
 }
 
-/* dark/light toggle */
+/* dark/light icon button */
 .mode-toggle {
-  position: relative;
-  z-index: 1;
   width: 34px;
   height: 34px;
   border-radius: 999px;
-  border: 1px solid rgba(248, 250, 252, 0.45);
+  border: 1px solid rgba(248, 250, 252, 0.5);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(15, 23, 42, 0.45);
   color: #facc15;
   cursor: pointer;
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out,
-    background 0.15s ease-out;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.65);
-}
-
-.mode-toggle i {
-  font-size: 16px;
-}
-
-.mode-toggle:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.8);
 }
 
 /* ---------- CONTENT ---------- */
 
 .content-area {
   flex: 1;
-  padding: 14px 16px 78px;
+  padding: 12px 14px 70px; /* bottom space for nav */
   overflow-y: auto;
-  background: radial-gradient(
-      circle at 0 0,
-      rgba(22, 163, 74, 0.07),
-      transparent 55%
-    ),
-    radial-gradient(
-      circle at 100% 100%,
-      rgba(37, 99, 235, 0.07),
-      transparent 55%
-    );
 }
 
 .content-area::-webkit-scrollbar {
@@ -240,25 +160,13 @@ body::before {
   border-radius: 999px;
 }
 
-/* ---------- TABS ---------- */
+/* ---------- BASIC TABS ---------- */
 
 .tab-content {
   display: none;
-  animation: fadeInTab 0.18s ease-out;
 }
 .tab-content.active {
   display: block;
-}
-
-@keyframes fadeInTab {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* =========================================================
@@ -269,11 +177,11 @@ body::before {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .home-summary-card {
-  background: radial-gradient(circle at top left, #16a34a, #166534);
+  background: radial-gradient(circle at top left, #16a34a, #065f46);
   border-radius: 18px;
   padding: 10px 12px;
   color: #e5fdf0;
@@ -290,26 +198,26 @@ body::before {
 
 .home-summary-value {
   font-family: "Poppins", sans-serif;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
-  margin-top: 2px;
 }
 
-/* Section cards (TBT, leaderboard, env) */
+/* cards on home – TBT, leaderboard, env, etc. */
+
 .home-section-card {
   background: var(--card-bg);
+  border-radius: 18px;
+  padding: 10px 12px;
   border: 1px solid var(--card-border);
   box-shadow: var(--shadow-card);
-  border-radius: 20px;
-  padding: 12px 14px 10px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .home-section-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  justify-content: space-between;
+  margin-bottom: 5px;
 }
 
 .home-section-header h3 {
@@ -317,69 +225,54 @@ body::before {
   font-size: 14px;
   font-family: "Poppins", sans-serif;
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
 }
 
 .home-section-header h3 i {
   color: var(--primary);
 }
 
-/* small button inside cards (Full leaderboard) */
 .home-link-btn {
   border-radius: 999px;
-  padding: 4px 10px;
+  padding: 3px 10px;
   font-size: 11px;
-  border: 1px solid rgba(148, 163, 184, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.8);
   background: transparent;
   cursor: pointer;
   color: var(--text-soft);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  transition: background 0.15s ease-out, color 0.15s ease-out,
-    box-shadow 0.15s ease-out, transform 0.15s ease-out;
 }
 
-.home-link-btn:hover {
-  background: var(--primary-soft);
-  color: #0f172a;
-  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.28);
-  transform: translateY(-1px);
-}
-
-/* Environment */
+/* environment strip */
 
 .home-env-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 4px;
+  gap: 8px;
 }
 
 .home-env-item {
   background: rgba(148, 163, 184, 0.08);
   border-radius: 14px;
-  padding: 8px 10px;
+  padding: 7px 9px;
 }
 
 .home-env-label {
   font-size: 11px;
-  color: var(--text-soft);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  color: var(--text-soft);
 }
 
 .home-env-value {
-  margin-top: 2px;
   font-size: 13px;
   font-weight: 600;
 }
 
-/* Month colour + EOM card */
+/* month colour + EOM */
 
 .info-month {
-  margin: 10px 2px 6px;
+  margin: 8px 2px 4px;
   font-size: 12px;
   color: var(--text-soft);
 }
@@ -392,65 +285,53 @@ body::before {
 #eomCard {
   background: linear-gradient(
     90deg,
-    rgba(250, 204, 21, 0.12),
+    rgba(250, 204, 21, 0.1),
     var(--card-bg)
   );
-  border-radius: 20px;
-  padding: 10px 12px;
+  border-radius: 18px;
+  padding: 9px 11px;
+  border: 1px solid var(--card-border);
   box-shadow: var(--shadow-card);
 }
 
 #eomCardTitle {
   font-size: 13px;
   font-weight: 600;
-  margin-bottom: 4px;
-}
-
-#employeeOfMonth {
-  font-size: 14px;
-  font-weight: 700;
+  margin-bottom: 3px;
 }
 
 /* =========================================================
-   ACCORDIONS (Emergency, Evacuation, Safety, TBT, Links)
+   ACCORDIONS (Emergency / Safety / TBT / Links)
    ========================================================= */
 
 .accordion {
   width: 100%;
   margin-top: 8px;
-  padding: 9px 12px;
+  padding: 9px 11px;
   border-radius: 16px;
   border: none;
   background: linear-gradient(
     90deg,
-    rgba(15, 23, 42, 0.98),
+    rgba(15, 23, 42, 0.96),
     rgba(30, 64, 175, 0.96)
   );
   color: #e5e7eb;
   display: flex;
   align-items: center;
   gap: 8px;
-  cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  box-shadow: var(--shadow-card);
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out,
-    background 0.15s ease-out;
+  cursor: pointer;
 }
 
 .accordion i {
   font-size: 14px;
 }
 
-.accordion:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.55);
-}
-
 .accordion.activeAcc {
   background: linear-gradient(
     90deg,
-    rgba(22, 163, 74, 0.95),
+    rgba(22, 163, 74, 0.96),
     rgba(30, 64, 175, 0.96)
   );
 }
@@ -458,7 +339,7 @@ body::before {
 .panel {
   display: none;
   margin-top: 4px;
-  padding: 8px 12px 10px;
+  padding: 8px 11px 10px;
   border-radius: 14px;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
@@ -466,14 +347,14 @@ body::before {
   color: var(--text-main);
 }
 
-/* GPS button under emergency */
+/* GPS button */
 
 .gps-btn {
   margin-top: 8px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 12px;
+  padding: 6px 11px;
   border-radius: 999px;
   border: none;
   background: var(--primary);
@@ -481,21 +362,6 @@ body::before {
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 12px 24px rgba(34, 197, 94, 0.5);
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out,
-    background 0.15s ease-out;
-}
-
-.gps-btn:hover {
-  transform: translateY(-1px);
-  background: #15803d;
-  box-shadow: 0 16px 30px rgba(21, 128, 61, 0.7);
-}
-
-.gps-result {
-  margin-top: 6px;
-  font-size: 12px;
-  color: var(--text-soft);
 }
 
 /* =========================================================
@@ -521,7 +387,6 @@ body::before {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  opacity: 0.95;
 }
 
 .obs-summary-value {
@@ -534,8 +399,8 @@ body::before {
 
 .obs-filters {
   background: var(--card-bg);
-  border-radius: 20px;
-  padding: 8px 10px 10px;
+  border-radius: 18px;
+  padding: 8px 10px;
   border: 1px solid var(--card-border);
   box-shadow: var(--shadow-card);
   margin-bottom: 10px;
@@ -550,23 +415,18 @@ body::before {
 .obs-filter-chip {
   flex: 1;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.8);
   background: transparent;
   font-size: 11px;
   padding: 5px 8px;
   cursor: pointer;
   color: var(--text-soft);
-  font-weight: 500;
-  transition: background 0.15s ease-out, color 0.15s ease-out,
-    box-shadow 0.15s ease-out, transform 0.15s ease-out;
 }
 
 .obs-filter-chip.active {
   background: var(--primary-soft);
   color: #065f46;
-  border-color: rgba(34, 197, 94, 0.9);
-  box-shadow: 0 8px 18px rgba(34, 197, 94, 0.4);
-  transform: translateY(-1px);
+  border-color: rgba(22, 163, 74, 0.9);
 }
 
 .obs-filters select,
@@ -578,116 +438,26 @@ body::before {
   font-size: 12px;
   color: var(--text-main);
   background: var(--shell-bg);
-  outline: none;
-}
-
-.obs-filters select:focus,
-.obs-filters input[type="text"]:focus {
-  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.8);
-  border-color: rgba(34, 197, 94, 0.9);
-}
-
-/* table (for desktop) */
-
-.obs-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-  background: var(--card-bg);
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: var(--shadow-card);
-}
-
-.obs-table thead {
-  background: rgba(15, 23, 42, 0.96);
-  color: #e5e7eb;
-}
-
-.obs-table th,
-.obs-table td {
-  padding: 7px 8px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.4);
-}
-
-.obs-table th {
-  text-align: left;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #cbd5f5;
-}
-
-.obs-table tbody tr:hover {
-  background: rgba(15, 23, 42, 0.04);
-}
-
-/* observation “card” used on mobile */
-
-.obs-card {
-  display: none; /* shown in mobile media-query */
-}
-
-/* risk & status badges */
-
-.obs-card-badge {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  padding: 3px 7px;
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.obs-badge-risk-low {
-  background: rgba(22, 163, 74, 0.16);
-  color: #047857;
-}
-.obs-badge-risk-medium {
-  background: rgba(234, 179, 8, 0.16);
-  color: #854d0e;
-}
-.obs-badge-risk-high {
-  background: rgba(220, 38, 38, 0.2);
-  color: #b91c1c;
-}
-
-.obs-badge-status-open {
-  background: rgba(220, 38, 38, 0.16);
-  color: #b91c1c;
-}
-.obs-badge-status-closed {
-  background: rgba(22, 163, 74, 0.16);
-  color: #166534;
-}
-.obs-badge-status-inprogress {
-  background: rgba(37, 99, 235, 0.16);
-  color: #1d4ed8;
 }
 
 /* empty state */
 
 .obs-empty-state {
   text-align: center;
-  padding: 14px 10px;
-  margin-top: 10px;
-  border-radius: 18px;
+  padding: 12px 9px;
+  margin-top: 8px;
+  border-radius: 16px;
   background: var(--card-bg);
   border: 1px dashed rgba(148, 163, 184, 0.8);
   color: var(--text-soft);
   box-shadow: var(--shadow-card);
 }
 
-.obs-empty-state i {
-  font-size: 18px;
-  margin-bottom: 4px;
-}
-
-/* “open sheet” button */
+/* open sheet button */
 
 .obs-open-sheet-btn {
   margin-top: 6px;
-  padding: 7px 12px;
+  padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.9);
   background: var(--card-bg);
@@ -697,15 +467,6 @@ body::before {
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  box-shadow: var(--shadow-card);
-  transition: background 0.15s ease-out, transform 0.15s ease-out,
-    box-shadow 0.15s ease-out;
-}
-
-.obs-open-sheet-btn:hover {
-  background: rgba(15, 23, 42, 0.03);
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.25);
 }
 
 /* =========================================================
@@ -720,8 +481,8 @@ body::before {
 
 .library-column {
   background: var(--card-bg);
-  border-radius: 20px;
-  padding: 10px 12px;
+  border-radius: 18px;
+  padding: 9px 11px;
   border: 1px solid var(--card-border);
   box-shadow: var(--shadow-card);
 }
@@ -746,12 +507,9 @@ body::before {
   border: 1px solid rgba(148, 163, 184, 0.9);
   padding: 6px 10px;
   font-size: 12px;
-  color: var(--text-main);
-  background: var(--shell-bg);
-  outline: none;
 }
 
-/* JSA list */
+/* TBT / JSA items */
 
 .jsa-accordion-item {
   width: 100%;
@@ -760,39 +518,21 @@ body::before {
   border-radius: 12px;
   background: rgba(15, 23, 42, 0.02);
   color: var(--text-main);
-  border: 1px solid rgba(148, 163, 184, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.6);
   margin-bottom: 5px;
   font-size: 12px;
   display: flex;
   align-items: center;
   gap: 7px;
   cursor: pointer;
-  transition: background 0.15s ease-out, transform 0.15s ease-out,
-    box-shadow 0.15s ease-out;
 }
 
 .jsa-accordion-item i {
   color: var(--primary);
 }
 
-.jsa-accordion-item:hover {
-  background: var(--primary-soft);
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(22, 163, 74, 0.25);
-}
-
-.jsa-panel {
-  display: none;
-  margin-bottom: 6px;
-  padding: 7px 8px;
-  border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.5);
-  background: rgba(15, 23, 42, 0.02);
-  font-size: 12px;
-}
-
 /* =========================================================
-   TOOLS TAB (KPI / HEAT / WIND)
+   TOOLS / KPI / HEAT / WIND
    ========================================================= */
 
 .tool-toggle-container {
@@ -814,47 +554,11 @@ body::before {
   font-weight: 600;
   color: var(--text-soft);
   cursor: pointer;
-  transition: background 0.15s ease-out, color 0.15s ease-out,
-    transform 0.15s ease-out, box-shadow 0.15s ease-out;
 }
 
 .tool-toggle-btn.active-tool {
   background: var(--primary-soft);
   color: #065f46;
-  box-shadow: 0 8px 18px rgba(34, 197, 94, 0.3);
-  transform: translateY(-1px);
-}
-
-/* tools headers */
-
-.tools-section-header {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin-bottom: 8px;
-}
-
-.tools-section-header i {
-  width: 30px;
-  height: 30px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(22, 163, 74, 0.18);
-  color: var(--primary);
-}
-
-.tools-section-header h3 {
-  margin: 0;
-  font-size: 14px;
-  font-family: "Poppins", sans-serif;
-}
-
-.tools-section-header small {
-  display: block;
-  font-size: 11px;
-  color: var(--text-soft);
 }
 
 /* generic KPI card */
@@ -863,74 +567,13 @@ body::before {
   border-radius: 18px;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  padding: 10px 12px;
+  padding: 9px 11px;
   margin-bottom: 8px;
   box-shadow: var(--shadow-card);
 }
 
-.kpi-input-group {
-  margin-bottom: 6px;
-}
-
-.kpi-input-group label {
-  display: block;
-  font-size: 11px;
-  color: var(--text-soft);
-  margin-bottom: 2px;
-}
-
-.kpi-input-field {
-  width: 100%;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.9);
-  padding: 6px 10px;
-  font-size: 12px;
-  color: var(--text-main);
-  background: var(--shell-bg);
-  outline: none;
-}
-
-.kpi-input-field:focus {
-  border-color: rgba(34, 197, 94, 0.9);
-  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.6);
-}
-
-/* heat / wind result cards */
-
-#heatIndexResultCard,
-#windSpeedResultCard {
-  display: none;
-  border-radius: 18px;
-  padding: 10px 12px;
-  margin-top: 8px;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  box-shadow: var(--shadow-card);
-}
-
-.heat-value,
-.wind-value {
-  font-size: 20px;
-  font-weight: 700;
-  margin-top: 2px;
-}
-
-.heat-category,
-.wind-category {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.heat-recommendations ul,
-.wind-recommendations ul {
-  margin: 4px 0 0;
-  padding-left: 18px;
-  font-size: 12px;
-}
-
 /* =========================================================
-   NEWS TAB
+   NEWS
    ========================================================= */
 
 .announcement-card {
@@ -942,62 +585,28 @@ body::before {
   box-shadow: var(--shadow-card);
 }
 
-.card-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.card-title i {
-  color: var(--accent);
-}
-
-.card-date {
-  margin-top: 2px;
-  font-size: 11px;
-  color: var(--text-soft);
-}
-
-.card-content {
-  margin-top: 6px;
-  font-size: 12px;
-}
-
 /* =========================================================
-   MODALS (Leaderboard + Emergency)
+   MODALS (Leaderboard & Emergency)
    ========================================================= */
 
 .modal {
-  display: none;
+  display: none;          /* VERY IMPORTANT: start hidden */
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.85);
-  z-index: 40;
+  z-index: 999;          /* above everything */
 }
 
 .modal-content {
-  background: #0b1727;
-  color: #e5e7eb;
+  background: var(--card-bg);
+  color: var(--text-main);
   margin: 40px auto;
   padding: 14px 16px 16px;
-  border-radius: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.6);
+  border-radius: 18px;
+  border: 1px solid var(--card-border);
   max-width: 720px;
   width: 94%;
-  box-shadow: 0 24px 46px rgba(0, 0, 0, 0.9);
-}
-
-body.light-mode .modal-content {
-  background: #ffffff;
-  color: #111827;
-}
-
-.modal-content h2 {
-  margin-top: 0;
-  font-family: "Poppins", sans-serif;
-  font-size: 18px;
+  box-shadow: 0 24px 46px rgba(0, 0, 0, 0.8);
 }
 
 .close-btn {
@@ -1007,30 +616,12 @@ body.light-mode .modal-content {
   cursor: pointer;
 }
 
-/* table inside modals */
-
-.modal-content table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-.modal-content th,
-.modal-content td {
-  padding: 6px 8px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.6);
-}
-
-.modal-content a {
-  color: #93c5fd;
-}
-
 /* =========================================================
    FLOATING BUTTONS
    ========================================================= */
 
 #addObservationButton {
-  position: absolute;
+  position: fixed;
   right: 18px;
   bottom: 76px;
   padding: 8px 14px;
@@ -1044,25 +635,12 @@ body.light-mode .modal-content {
   align-items: center;
   gap: 6px;
   text-decoration: none;
-  box-shadow: var(--shadow-fab);
-  cursor: pointer;
-  z-index: 5;
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+  box-shadow: 0 18px 36px rgba(22, 163, 74, 0.55);
+  z-index: 20;
 }
-
-#addObservationButton i {
-  font-size: 12px;
-}
-
-#addObservationButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 20px 40px rgba(22, 163, 74, 0.7);
-}
-
-/* emergency quick button */
 
 #emergencyQuickButton {
-  position: absolute;
+  position: fixed;
   left: 18px;
   bottom: 76px;
   width: 44px;
@@ -1074,38 +652,23 @@ body.light-mode .modal-content {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 18px 38px rgba(185, 28, 28, 0.75);
-  cursor: pointer;
-  z-index: 5;
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-}
-
-#emergencyQuickButton i {
-  font-size: 18px;
-}
-
-#emergencyQuickButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 22px 44px rgba(185, 28, 28, 0.9);
+  box-shadow: 0 18px 38px rgba(185, 28, 28, 0.9);
+  z-index: 20;
 }
 
 /* =========================================================
-   BOTTOM NAVIGATION
+   BOTTOM NAV (TABS)
    ========================================================= */
 
 .nav-bar {
-  position: absolute;
-  left: 18px;
-  right: 18px;
-  bottom: 10px;
-  height: 54px;
+  height: 52px;
   background: var(--nav-bg);
   border-radius: 999px;
   border: 1px solid var(--nav-border);
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35);
-  overflow: hidden;
+  margin: 8px 14px 10px;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.35);
 }
 
 .nav-button {
@@ -1117,8 +680,6 @@ body.light-mode .modal-content {
   font-size: 10px;
   color: var(--text-soft);
   cursor: pointer;
-  transition: background 0.15s ease-out, color 0.15s ease-out,
-    transform 0.15s ease-out;
 }
 
 .nav-icon {
@@ -1126,9 +687,8 @@ body.light-mode .modal-content {
 }
 
 .nav-button.active {
-  background: var(--nav-active);
+  background: var(--nav-active-bg);
   color: var(--text-main);
-  transform: translateY(-1px);
 }
 
 .nav-button.active .nav-icon {
@@ -1141,18 +701,14 @@ body.light-mode .modal-content {
 
 @media (max-width: 768px) {
   .app-container {
-    border-radius: 0;
-    height: 100vh;
+    max-width: 100%;
     margin: 0;
+    border-radius: 0;
+    min-height: 100vh;
   }
 
   .content-area {
-    padding: 10px 10px 80px;
-  }
-
-  .home-summary-grid,
-  .obs-summary-bar {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 10px 10px 70px;
   }
 
   .library-layout {
@@ -1160,34 +716,16 @@ body.light-mode .modal-content {
   }
 
   #addObservationButton {
-    right: 16px;
-    bottom: 78px;
+    right: 14px;
   }
-
   #emergencyQuickButton {
-    left: 16px;
-    bottom: 78px;
-  }
-
-  /* on mobile we use cards instead of table */
-  .obs-table {
-    display: none;
-  }
-  .obs-card {
-    display: block;
-    background: var(--card-bg);
-    border-radius: 18px;
-    padding: 10px 11px;
-    margin-bottom: 8px;
-    border: 1px solid var(--card-border);
-    box-shadow: var(--shadow-card);
+    left: 14px;
   }
 }
 
 @media (max-width: 480px) {
   .nav-bar {
-    left: 12px;
-    right: 12px;
+    margin: 8px 10px 10px;
   }
 
   #addObservationButton {
