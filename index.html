@@ -2,79 +2,47 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1, user-scalable=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 
-    <!-- Icons & Fonts -->
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@600;700&display=swap"
-        rel="stylesheet"
-    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
 
-    <!-- App icon -->
-    <link
-        rel="icon"
-        type="image/png"
-        href="https://drive.google.com/uc?export=view&id=1pT2_mI_B9CrnOde6YK__OzBd2gYEppXy"
-    />
+    <link rel="icon" type="image/png" href="https://drive.google.com/uc?export=view&id=1pT2_mI_B9CrnOde6YK__OzBd2gYEppXy" />
 
     <title>My Observations App 👷🏻‍♂️</title>
 
-    <!-- Main styles -->
     <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body class="light-mode">
 <div class="app-container">
 
-    <!-- 🧠 Header -->
     <header class="app-header">
         <div class="header-title-area">
             <h1>My Observations App 👷🏻‍♂️</h1>
             <p class="header-subtitle">Daily safety cockpit</p>
         </div>
-        <button
-            class="mode-toggle"
-            type="button"
-            aria-label="Toggle dark mode"
-        >
+        <button class="mode-toggle" type="button" aria-label="Toggle dark mode">
             <i id="modeIcon" class="fas fa-moon"></i>
         </button>
     </header>
 
-    <!-- 🏆 Leaderboard Modal -->
     <div id="leaderboardModal" class="modal">
         <div class="modal-content">
-            <button
-                class="close-btn"
-                type="button"
-                onclick="hideLeaderboardModal()"
-            >
+            <button class="close-btn" type="button" onclick="hideLeaderboardModal()">
                 &times;
             </button>
             <h2>🏆 Monthly Leaderboard</h2>
             <div id="leaderboardContainer">
                 <div class="loading-spinner">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    Loading leaderboard...
+                    <i class="fas fa-spinner fa-spin"></i> Loading leaderboard...
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 🆘 Emergency Contacts Modal -->
     <div id="emergencyContactsModal" class="modal">
         <div class="modal-content">
-            <button
-                class="close-btn"
-                type="button"
-                onclick="hideEmergencyContactsModal()"
-            >
+            <button class="close-btn" type="button" onclick="hideEmergencyContactsModal()">
                 &times;
             </button>
             <h2>🆘 Emergency Contacts</h2>
@@ -90,7 +58,6 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <!-- keep / edit these numbers as you like -->
                     <tr><td>CAT EMERGENCY</td><td>EMERGENCY</td><td><a href="tel:0543133645">054 313 3645</a></td></tr>
                     <tr><td>HARADH CLINIC</td><td>Haradh Clinic</td><td><a href="tel:0569180911">056 918 0911</a></td></tr>
                     <tr><td>Maher A. Jardali</td><td>Operation Manager</td><td><a href="tel:0505817134">050 581 7134</a></td></tr>
@@ -138,12 +105,9 @@
         </div>
     </div>
 
-    <!-- Main content -->
     <main class="content-area">
 
-        <!-- 🏠 HOME TAB -->
         <section id="HomeTab" class="tab-content active">
-            <!-- KPI Strip -->
             <div class="home-kpi-row">
                 <div class="home-kpi-card">
                     <div class="home-kpi-label">Observers Today</div>
@@ -159,7 +123,6 @@
                 </div>
             </div>
 
-            <!-- TBT of the day -->
             <section class="home-card" id="homeTbtSection">
                 <header class="home-card-header">
                     <h3><i class="fas fa-book-open"></i> TBT of The Day</h3>
@@ -169,15 +132,10 @@
                 </div>
             </section>
 
-            <!-- Top 3 leaderboard -->
             <section class="home-card">
                 <header class="home-card-header">
                     <h3><i class="fas fa-trophy"></i> Top 3 This Month</h3>
-                    <button
-                        class="link-button"
-                        type="button"
-                        onclick="showLeaderboardModal()"
-                    >
+                    <button class="link-button" type="button" onclick="showLeaderboardModal()">
                         Full leaderboard
                     </button>
                 </header>
@@ -186,7 +144,6 @@
                 </div>
             </section>
 
-            <!-- Environment -->
             <section class="home-card">
                 <header class="home-card-header">
                     <h3><i class="fas fa-temperature-high"></i> Environment Status</h3>
@@ -206,7 +163,6 @@
                 </p>
             </section>
 
-            <!-- Month color + EOM -->
             <p class="month-color-line">
                 The Color Code of This Month is:
                 <span id="colorName">...</span>
@@ -219,7 +175,6 @@
                 <div id="employeeOfMonth">Loading...</div>
             </section>
 
-            <!-- Accordions -->
             <button class="accordion">
                 <i class="fas fa-trophy"></i> Monthly Leaderboard
             </button>
@@ -233,11 +188,7 @@
             <div class="panel">
                 <p>
                     Tap the red ambulance button or
-                    <button
-                        type="button"
-                        class="link-button inline"
-                        onclick="showEmergencyContactsModal()"
-                    >
+                    <button type="button" class="link-button inline" onclick="showEmergencyContactsModal()">
                         open full list
                     </button>.
                 </p>
@@ -255,11 +206,7 @@
                     <li>Answer all questions from the operator.</li>
                     <li>Do not hang up until instructed.</li>
                 </ol>
-                <button
-                    class="gps-btn"
-                    type="button"
-                    onclick="getGPSLocation()"
-                >
+                <button class="gps-btn" type="button" onclick="getGPSLocation()">
                     <i class="fas fa-map-marker-alt"></i>
                     Share My Location (GPS)
                 </button>
@@ -301,8 +248,7 @@
                 <i class="fas fa-book-open"></i> Full TBT Details
             </button>
             <div class="panel" id="tbtPanel">
-                <!-- Filled by JS -->
-            </div>
+                </div>
 
             <button class="accordion">
                 <i class="fas fa-link"></i> Useful Links
@@ -323,7 +269,6 @@
             </div>
         </section>
 
-        <!-- 📊 OBSERVATIONS TAB -->
         <section id="ObservationsTab" class="tab-content">
             <div class="obs-summary-bar">
                 <div class="obs-summary-item">
@@ -362,11 +307,7 @@
                     </select>
                 </div>
                 <div class="obs-filter-row">
-                    <input
-                        type="text"
-                        id="obsSearch"
-                        placeholder="Search by location, type, reporter..."
-                    />
+                    <input type="text" id="obsSearch" placeholder="Search by location, type, reporter..." />
                 </div>
             </div>
 
@@ -377,30 +318,18 @@
                 Open full data sheet
             </button>
 
-            <div
-                id="observationsEmptyState"
-                class="obs-empty-state"
-                style="display: none;"
-            >
+            <div id="observationsEmptyState" class="obs-empty-state" style="display: none;">
                 <i class="fas fa-database"></i>
                 <p>No observations data loaded yet.</p>
             </div>
         </section>
 
-        <!-- ✅ DAILY TASKS TAB -->
         <section id="TasksTab" class="tab-content">
-            <iframe
-                id="tasksIframe"
-                title="Daily tasks form"
-                frameborder="0"
-                marginheight="0"
-                marginwidth="0"
-            >
+            <iframe id="tasksIframe" title="Daily tasks form" frameborder="0" marginheight="0" marginwidth="0">
                 Loading…
             </iframe>
         </section>
 
-        <!-- 📚 LIBRARY TAB (TBT + JSA) -->
         <section id="JSATab" class="tab-content">
             <div class="library-layout">
                 <div class="library-column">
@@ -409,43 +338,25 @@
                 </div>
                 <div class="library-column">
                     <h3><i class="fas fa-file-alt"></i> JSA Library</h3>
-                    <input
-                        type="text"
-                        id="jsaSearch"
-                        placeholder="Search JSA titles (e.g., scaffolding, lifting)..."
-                    />
+                    <input type="text" id="jsaSearch" placeholder="Search JSA titles (e.g., scaffolding, lifting)..." />
                     <div id="jsaListContainer"></div>
                 </div>
             </div>
         </section>
 
-        <!-- 🧮 TOOLS TAB -->
         <section id="ToolsTab" class="tab-content">
             <div class="tool-toggle-container">
-                <button
-                    class="tool-toggle-btn active-tool"
-                    type="button"
-                    data-tool="kpi"
-                >
+                <button class="tool-toggle-btn active-tool" type="button" data-tool="kpi">
                     Safety KPIs
                 </button>
-                <button
-                    class="tool-toggle-btn"
-                    type="button"
-                    data-tool="heat"
-                >
+                <button class="tool-toggle-btn" type="button" data-tool="heat">
                     Heat Stress
                 </button>
-                <button
-                    class="tool-toggle-btn"
-                    type="button"
-                    data-tool="wind"
-                >
+                <button class="tool-toggle-btn" type="button" data-tool="wind">
                     Wind Limits
                 </button>
             </div>
 
-            <!-- KPI Section (you can expand later if you like) -->
             <section id="kpiSection">
                 <div class="tools-section-header">
                     <i class="fas fa-calculator"></i>
@@ -459,7 +370,6 @@
                 </p>
             </section>
 
-            <!-- Heat Stress Section -->
             <section id="heatStressSection" style="display: none;">
                 <div class="tools-section-header heat">
                     <i class="fas fa-sun"></i>
@@ -472,23 +382,11 @@
                 <div class="kpi-card">
                     <div class="kpi-input-group">
                         <label>Air Temperature (°C)</label>
-                        <input
-                            type="number"
-                            id="inputTemp"
-                            class="kpi-input-field"
-                            placeholder="e.g., 35"
-                            oninput="calculateHeatIndex()"
-                        />
+                        <input type="number" id="inputTemp" class="kpi-input-field" placeholder="e.g., 35" oninput="calculateHeatIndex()" />
                     </div>
                     <div class="kpi-input-group">
                         <label>Relative Humidity (%)</label>
-                        <input
-                            type="number"
-                            id="inputHumidity"
-                            class="kpi-input-field"
-                            placeholder="e.g., 40"
-                            oninput="calculateHeatIndex()"
-                        />
+                        <input type="number" id="inputHumidity" class="kpi-input-field" placeholder="e.g., 40" oninput="calculateHeatIndex()" />
                     </div>
                 </div>
 
@@ -502,7 +400,6 @@
                 </div>
             </section>
 
-            <!-- Wind Speed Section -->
             <section id="windSpeedSection" style="display: none;">
                 <div class="tools-section-header wind">
                     <i class="fas fa-wind"></i>
@@ -515,13 +412,7 @@
                 <div class="kpi-card">
                     <div class="kpi-input-group">
                         <label>Current Wind Speed (km/h)</label>
-                        <input
-                            type="number"
-                            id="inputWind"
-                            class="kpi-input-field"
-                            placeholder="e.g., 25"
-                            oninput="calculateWindSafety()"
-                        />
+                        <input type="number" id="inputWind" class="kpi-input-field" placeholder="e.g., 25" oninput="calculateWindSafety()" />
                     </div>
                 </div>
 
@@ -536,94 +427,52 @@
             </section>
         </section>
 
-        <!-- 📰 NEWS TAB -->
         <section id="NewsTab" class="tab-content">
             <div id="AnnouncementsContainer">
                 <div id="newsLoading" class="loading-spinner">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    Fetching news...
+                    <i class="fas fa-spinner fa-spin"></i> Fetching news...
                 </div>
             </div>
         </section>
 
     </main>
 
-    <!-- Floating Add Observation Button -->
-    <a
-        id="addObservationButton"
-        class="add-observation-btn"
-        href="#"
-        target="_blank"
-    >
-        <i class="fas fa-plus"></i>
-        Add New Observation
+    <a id="addObservationButton" class="add-observation-btn" href="#" target="_blank">
+        <i class="fas fa-plus"></i> Add New Observation
     </a>
 
-    <!-- Floating Emergency Button -->
-    <button
-        id="emergencyQuickButton"
-        type="button"
-        title="Emergency Contacts"
-        onclick="showEmergencyContactsModal()"
-    >
+    <button id="emergencyQuickButton" type="button" title="Emergency Contacts" onclick="showEmergencyContactsModal()">
         <i class="fas fa-ambulance"></i>
     </button>
 
-    <!-- Bottom Navigation -->
     <nav class="nav-bar" role="tablist">
-        <button
-            class="nav-button active"
-            type="button"
-            data-tab="HomeTab"
-            aria-selected="true"
-        >
+        <button class="nav-button active" type="button" data-tab="HomeTab" aria-selected="true">
             <span class="nav-icon"><i class="fas fa-house"></i></span>
             <span>Home</span>
         </button>
-        <button
-            class="nav-button"
-            type="button"
-            data-tab="ObservationsTab"
-        >
+        <button class="nav-button" type="button" data-tab="ObservationsTab">
             <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
             <span>Observations</span>
         </button>
-        <button
-            class="nav-button"
-            type="button"
-            data-tab="TasksTab"
-        >
+        <button class="nav-button" type="button" data-tab="TasksTab">
             <span class="nav-icon"><i class="fas fa-list-check"></i></span>
             <span>Tasks</span>
         </button>
-        <button
-            class="nav-button"
-            type="button"
-            data-tab="JSATab"
-        >
+        <button class="nav-button" type="button" data-tab="JSATab">
             <span class="nav-icon"><i class="fas fa-handshake"></i></span>
             <span>Library</span>
         </button>
-        <button
-            class="nav-button"
-            type="button"
-            data-tab="ToolsTab"
-        >
+        <button class="nav-button" type="button" data-tab="ToolsTab">
             <span class="nav-icon"><i class="fas fa-calculator"></i></span>
             <span>Tools</span>
         </button>
-        <button
-            class="nav-button"
-            type="button"
-            data-tab="NewsTab"
-        >
+        <button class="nav-button" type="button" data-tab="NewsTab">
             <span class="nav-icon"><i class="fas fa-bullhorn"></i></span>
             <span>News</span>
         </button>
     </nav>
 </div>
 
-<!-- JS files: config first, then logic -->
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 </body>
