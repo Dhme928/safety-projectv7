@@ -1,23 +1,26 @@
+// =========================================
 // Central configuration & data for the safety app
-// All URLs & safety libraries live here, so app.js can focus on logic/UI.
+// All URLs & safety libraries live here so app.js
+// can focus on logic + UI.
+// =========================================
 
-// ========== GOOGLE FORMS ==========
+// ========== GOOGLE FORMS (EMBEDS & LINKS) ==========
 
+// Daily tasks / checklist form (embedded in Tasks tab)
 window.TASKS_FORM_EMBED_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSezm0wWTdEsvkIdnzhfpRf0G37tZzqbY-AF-BHfbXXiLr2rKA/viewform?embedded=true';
 
+// Add new observation form (used by floating green button)
 window.ADD_OBSERVATION_FORM_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSfYED_4UfHcmWn0fQOjtR5s8A0-Bhr4dwpe-80GjKkLeTR_Lw/viewform?usp=header';
 
-// ========== GOOGLE SHEETS (CSV) ==========
+// ========== GOOGLE SHEETS (CSV & VIEW LINKS) ==========
 
 // Employee of the Month + Leaderboard sheet (CSV)
 window.EOM_SHEET_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0Km9p6XYDDxyGYSFfUjDjhdKMtr_hFvCiJ-U5_24_-QKrGsexZ4v3dxzKp0K1XZenNsiV7CiNmQEt/pub?output=csv';
 
 // Observations main data sheet (CSV)
-// (This is the same spreadsheet you used before in your Data tab,
-// converted from /pubhtml to /pub?output=csv)
 window.OBSERVATIONS_SHEET_CSV_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vTXlN-sE-IkQJLMaVOvRGSBYNLsDvwZTD15w7rarTIXBGoacF0C5_eiI7OmFs__zA8jtlwhy0ULLZ8N/pub?output=csv';
 
@@ -25,96 +28,107 @@ window.OBSERVATIONS_SHEET_CSV_URL =
 window.NEWS_SHEET_CSV_URL =
   'https://docs.google.com/spreadsheets/d/1_SwxL5f4mWF5kd2yofCMCEE_WQp_2eroHDhXXPXtw1U/export?format=csv&gid=0';
 
-// Full observations sheet (for "Open full data sheet" button)
+// Full observations HTML sheet (opened when user taps
+// "Open full data sheet" button in Observations tab)
 window.OBSERVATIONS_FULL_SHEET_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vTXlN-sE-IkQJLMaVOvRGSBYNLsDvwZTD15w7rarTIXBGoacF0C5_eiI7OmFs__zA8jtlwhy0ULLZ8N/pubhtml';
 
-// ========== TBT & JSA LIBRARIES ==========
-// Below are copied directly from your original index.html so you keep ALL
-// your toolbox talks and JSA links exactly as you had them.
+// Optional default color code of the month (used as
+// fallback if EOM sheet has no value for this month)
+window.DEFAULT_MONTH_COLOR_NAME = 'White';
 
-// TBT Data structure: { title: "TBT Title", link: "Google Drive Link" }
+// =========================================
+// TBT LIBRARY
+// =========================================
+//
+// Each item: { title: "TBT Title", link: "Google Drive link" }
+
 window.tbtData = [
-  { title: " TBT of The Day Alcohol and Drugs", link: "https://drive.google.com/file/d/1uIGAjyY2UuxdkWToEGqMoF-L1Q9cIn5c/view?usp=drivesdk" },
-  { title: " TBT of The Day Biohazard infection materials", link: "https://drive.google.com/file/d/1wUY8mlaEXOroUK5IoPPbBpym97Jdjfm4/view?usp=drivesdk" },
-  { title: " TBT of The Day Cold Weather", link: "https://drive.google.com/file/d/1QOp3TVAb-si19p-taHpPjSwEfXs1O5us/view?usp=drivesdk" },
-  { title: " TBT of The Day Compressed Gas", link: "https://drive.google.com/file/d/1a7tLsOI7Re7QAWDivisUFdakbvpSEYOt/view?usp=drivesdk" },
-  { title: " TBT of The Day Construction Fires", link: "https://drive.google.com/file/d/1nXBiIuAEjs4om2NwASqfyhtT-8IUBpGt/view?usp=drivesdk" },
-  { title: " TBT of The Day Corrosive Materials", link: "https://drive.google.com/file/d/1VaFxPYhYt0Ho8blbkGQi2S4ubsT882ge/view?usp=drivesdk" },
-  { title: " TBT of The Day Dangerously reactive material", link: "https://drive.google.com/file/d/16CNFN5iuf3YFyVW-tYNVQgHkRu8z8deg/view?usp=drivesdk" },
-  { title: " TBT of The Day Dial before you Dig", link: "https://drive.google.com/file/d/1YlWyaHh2lPoum-OYYoJ2qP8t948qwLZI/view?usp=drivesdk" },
-  { title: " TBT of The Day Driving in Reverse", link: "https://drive.google.com/file/d/1QzLSWz3CFfjGdmj62OsFdvT5IcV_lrqJ/view?usp=drivesdk" },
-  { title: " TBT of The Day Emergency Response", link: "https://drive.google.com/file/d/1bWiXimPy6SmqbtEs5LxJE9zvS765GSzN/view?usp=drivesdk" },
-  { title: " TBT of The Day Equipment Guards", link: "https://drive.google.com/file/d/1i4o3HHM6O2EPJ1hf-2IQ97_AREDCMIDr/view?usp=drivesdk" },
-  { title: " TBT of The Day Exercise and Health", link: "https://drive.google.com/file/d/13pnUXqSmGNuXHAGKG7TyKhwryEWbtAaO/view?usp=drivesdk" },
-  { title: " TBT of The Day Eye Protection", link: "https://drive.google.com/file/d/13HufH-DcwH-P-pEZZKTUNzHSo2lzyzLa/view?usp=drivesdk" },
-  { title: " TBT of The Day Fall Protection", link: "https://drive.google.com/file/d/1RPpUrSAzCOE8uGUlE1sCXH0woxxzJqw4/view?usp=drivesdk" },
-  { title: " TBT of The Day Fire Prevention", link: "https://drive.google.com/file/d/1Sz8Kobsyj3Sib4vhKvY2JDPjJUs2MERC/view?usp=drivesdk" },
-  { title: " TBT of The Day First Aid Kit", link: "https://drive.google.com/file/d/1g50xudoRJVXxXvum4vbNaEebSvM_Kkyo/view?usp=drivesdk" },
-  { title: " TBT of The Day First aid kits Naloxia", link: "https://drive.google.com/file/d/1XQ8Zy1xI621BA2oktxLesZiXh0DiWFER/view?usp=drivesdk" },
-  { title: " TBT of The Day Ground Stability", link: "https://drive.google.com/file/d/1afLmut5ReTTZspJqEBd2sg1pAxq9y3F0/view?usp=drivesdk" },
-  { title: " TBT of The Day Hand Protection", link: "https://drive.google.com/file/d/1NeYb6ZIpm8sqU-VcyLDqrOwDvHnmZwrq/view?usp=drivesdk" },
-  { title: " TBT of The Day Hand tools", link: "https://drive.google.com/file/d/1L9n9G5HRo4Gi0bw_g-7eBxsrtBi7ADPG/view?usp=drivesdk" },
-  { title: " TBT of The Day Hand Tools and PPE", link: "https://drive.google.com/file/d/1CrvCgTI0uMztvKsEGgafHwJNQoWBaF-K/view?usp=drivesdk" },
-  { title: " TBT of The Day Hearing Conservation", link: "https://drive.google.com/file/d/19_gZ3vWtx1Vx56Nyx7z3BEB3I5XdvZ6y/view?usp=drivesdk" },
-  { title: " TBT of The Day Heat Stress", link: "https://drive.google.com/file/d/1FlnBFJR3oWVlmvaptbvEHurdVrZHm7hh/view?usp=drivesdk" },
-  { title: " TBT of The Day HID and Driving Awareness", link: "https://drive.google.com/file/d/1NHrzYkF5AfIG7sxgu1Vf8pU5XsWhThfK/view?usp=drivesdk" },
-  { title: " TBT of The Day High Pressure Equipment Safety", link: "https://drive.google.com/file/d/1Z6dYVSGFeGXc5ByA7tV0XRXmHVI3V3L0/view?usp=drivesdk" },
-  { title: " TBT of The Day Housekeeping", link: "https://drive.google.com/file/d/1tRet-AThes-9zgXQruo9c-MTgw-_zVdc/view?usp=drivesdk" },
-  { title: " TBT of The Day How to Inspect your Gloves", link: "https://drive.google.com/file/d/1HLmzQDnDGtEY4xamLE7rTWdH9islH0Fu/view?usp=drivesdk" },
-  { title: " TBT of The Day Indoor Hazards", link: "https://drive.google.com/file/d/1vU2WmuBBceUufEX0dAnd65aXmodHT5LF/view?usp=drivesdk" },
-  { title: " TBT of The Day Insects Bites", link: "https://drive.google.com/file/d/1ajVsD83kZMpMKsDYSqpNI0WK2MpEgxyx/view?usp=drivesdk" },
-  { title: " TBT of The Day Lead Material", link: "https://drive.google.com/file/d/1SNT0t6LarP-UcZUPNR-hrb7JwEPy6cXG/view?usp=drivesdk" },
-  { title: " TBT of The Day Manual Handling", link: "https://drive.google.com/file/d/1RV69YCoHVqPHouy5tF9c7ab5aDG8pmo9/view?usp=drivesdk" },
-  { title: " TBT of The Day Mechanical Equipment", link: "https://drive.google.com/file/d/1XZ_xQ7bCqdJXqfbrPkMXUbF4IcCw3q7_/view?usp=drivesdk" },
-  { title: " TBT of The Day Noise", link: "https://drive.google.com/file/d/1nFQ0Pm5bj1Cgi660JrpZ-iy_N2CCF4cl/view?usp=drivesdk" },
-  { title: " TBT of The Day Office Safety", link: "https://drive.google.com/file/d/11hHS314Vh_dfCYOo9r3QCGmjD4zlT4Ok/view?usp=drivesdk" },
-  { title: " TBT of The Day Personal Protection Equipment", link: "https://drive.google.com/file/d/1yizSxE4ZIYufBkJ7Pq3wl7GGFvSY4bUo/view?usp=drivesdk" },
-  { title: " TBT of The Day Plant and Machinery", link: "https://drive.google.com/file/d/1fQJRLO1M6GmjjdHpqW-uL1pMPnnrdPLQ/view?usp=drivesdk" },
-  { title: " TBT of The Day Qualified Operators", link: "https://drive.google.com/file/d/1eBVA8jJivO8dV2Se9_ZdrplOtKxf_Xwu/view?usp=drivesdk" },
-  { title: " TBT of The Day Reporting Accidents", link: "https://drive.google.com/file/d/1grVco6aH7hLEmAGc9x7qbLSbrOyGxSGb/view?usp=drivesdk" },
-  { title: " TBT of The Day Risk Assessment", link: "https://drive.google.com/file/d/1lZ7V6W8ylA3TVRo4Zm3fF8sYNTw3LfnW/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe Lifting of Objects", link: "https://drive.google.com/file/d/1pZkmeepCfjVOoovZLf35fh1QFjhyVSg7/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe Operation of MEWP", link: "https://drive.google.com/file/d/1HsJ7pCokUIVSdyyCvPpbDUFAQQiqNeh9/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe Operation of Pneumatic Tools", link: "https://drive.google.com/file/d/1bfxwvthfR2pABZKiiZ-wwEd2jUXcv7HX/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe Operation Portable power tools", link: "https://drive.google.com/file/d/1rg7ZjUSYJPasy_47p5cRTrWui7oHO1rp/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe Operation of Scaffolding", link: "https://drive.google.com/file/d/1SXUjbENSXzhfIvJIFkwEQopqecTZihNq/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe operation of tools", link: "https://drive.google.com/file/d/1syflkSRazQJJvY5B9ESzAcns0SyQQzQZ/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe Work on roof", link: "https://drive.google.com/file/d/12T4MbPdMW_p-Vtpw9RK4_eo2c1v4FttH/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe Work Practice", link: "https://drive.google.com/file/d/1gVXFDHisfRTRQoTBAXdyZK_0NCGxxjCB/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe Work with hand tools", link: "https://drive.google.com/file/d/1HNC7ldy8c4F3veRMN0ZFNGhH2q5fiScR/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe Working Practice Construction", link: "https://drive.google.com/file/d/14VqfTpa6exin7SmjJS3j9vZwZLh5-dNs/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe Working with Electrical Equipment", link: "https://drive.google.com/file/d/1DDxelLTZAeeb2sJEWfhKF0UNFhmQmjhM/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe Working with Drill, Concrete, Core Cutting , Chipping", link: "https://drive.google.com/file/d/1uadL2bi--xLbRL-yM3zpHWAGi60uxZ_n/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe working with Heavy Equipment", link: "https://drive.google.com/file/d/1xMOCzvFQlFls88pj9ecBYZzRIp03c9BH/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe Working with Heavy Tools", link: "https://drive.google.com/file/d/1M7894AHqrSmj4gSzdTYFa8RnJet4mPic/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe Working with ladders", link: "https://drive.google.com/file/d/1b7Mepx2_zUDylghCKtq_I6xUAsdKGyOx/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe Working with traffic routes", link: "https://drive.google.com/file/d/1eUzcDAb-xIUVexEtZUiNS0vHZ_oFfq8x/view?usp=drivesdk" },
-  { title: " TBT of The Day Safe Working with Vehicle", link: "https://drive.google.com/file/d/1vJ2svjwJ9XgXtBF0eMvAeLLjfCaV-5-a/view?usp=drivesdk" },
-  { title: " TBT of The Day Safety Awareness", link: "https://drive.google.com/file/d/1yWrqcoXxBOZetGmkxgsShPZCWQSkKA_G/view?usp=drivesdk" },
-  { title: " TBT of The Day Safety in Industrial area", link: "https://drive.google.com/file/d/1dH1XY6hAJz296ymAIF6u3vCWYzUASx1e/view?usp=drivesdk" },
-  { title: " TBT of The Day Scaffolding", link: "https://drive.google.com/file/d/1tL8epcXq_yJqG5wzHpfql7ufxLToi9SL/view?usp=drivesdk" },
-  { title: " TBT of The Day Slips, Trips and Falls", link: "https://drive.google.com/file/d/1F7TNF2sKAwlKN__Sei7BF3JDpzVkcFEP/view?usp=drivesdk" },
-  { title: " TBT of The Day Smoke and Toxic Gases", link: "https://drive.google.com/file/d/1NiNlYJL9iOkYGCqe9lMUldj1I7mHTpZz/view?usp=drivesdk" },
-  { title: " TBT of The Day Suitable Tools", link: "https://drive.google.com/file/d/1Azg5I-8yd7XFf7GscvZ0NqNqWefKHPKm/view?usp=drivesdk" },
-  { title: " TBT of The Day Traffic Route", link: "https://drive.google.com/file/d/1oGI1MpGDbaxYLip7no8_ox5nq5lVzScE/view?usp=drivesdk" },
-  { title: " TBT of The Day Use of Compressed Gas", link: "https://drive.google.com/file/d/1HSCKjDvErdFP3SX9WgbUvaVThZbT5FdW/view?usp=drivesdk" },
-  { title: " TBT of The Day Use of PPE", link: "https://drive.google.com/file/d/1vnXmG5di_9iVLCHvOLfbTofkBBpVqAAx/view?usp=drivesdk" },
-  { title: " TBT of The Day Vehicle and Transportation", link: "https://drive.google.com/file/d/1gW-NPGfujHFXbbRvj1n-MOH_i3xm7Q2m/view?usp=drivesdk" },
-  { title: " TBT of The Day Vehicle movement on site", link: "https://drive.google.com/file/d/1gAmc2WO_smXxVUxGwjFvLBmI3kcRrMlp/view?usp=drivesdk" },
-  { title: " TBT of The Day Walking on uneven ground", link: "https://drive.google.com/file/d/1vN5ZabdcpY3RJfIxRjWJHT3sejVfl5hP/view?usp=drivesdk" },
-  { title: " TBT of The Day Welding, Cutting and Grinding", link: "https://drive.google.com/file/d/1oM-xIISFvS5VcterChmJzvmmC7gMiFL0/view?usp=drivesdk" },
-  { title: " TBT of The Day Workplace safety plan", link: "https://drive.google.com/file/d/1enLU0T27BLTNotJuCiIp0O206n4VWXQo/view?usp=drivesdk" },
-  { title: " TBT of The Day Working at Height", link: "https://drive.google.com/file/d/1IQXxqEvuUcLOdwZtGt9j7_fg7SG91oyl/view?usp=drivesdk" },
-  { title: " TBT of The Day Working in cold environments", link: "https://drive.google.com/file/d/1D3VpCDuZMyFCIHVd1XufmEqN_s_cqAi0/view?usp=drivesdk" },
-  { title: " TBT of The Day Working in Confined Spaces", link: "https://drive.google.com/file/d/1mUuYt5TonFky6vwUeKaM7NVTL-xRBA4c/view?usp=drivesdk" },
-  { title: " TBT of The Day Working near Excavations", link: "https://drive.google.com/file/d/1-fsjfModLdme2Xw_alZgiWZ5-rnbEIFR/view?usp=drivesdk" },
-  { title: " TBT of The Day Working on bridges", link: "https://drive.google.com/file/d/1YaIuC4cltwTfS7TiJU7VYIf6XeKZqSo-/view?usp=drivesdk" },
-  { title: " TBT of The Day Working on moving vehicle", link: "https://drive.google.com/file/d/1sGLUH42ud5I9i_o1jMtpH_S-eu5TJ1J3/view?usp=drivesdk" },
-  { title: " TBT of The Day Working with Hazardous Materials", link: "https://drive.google.com/file/d/1gYF6cUISYjUZF_pLEKadmPbe49YM2_ph/view?usp=drivesdk" }
+  { title: "TBT of The Day Alcohol and Drugs", link: "https://drive.google.com/file/d/1uIGAjyY2UuxdkWToEGqMoF-L1Q9cIn5c/view?usp=drivesdk" },
+  { title: "TBT of The Day Biohazard infection materials", link: "https://drive.google.com/file/d/1wUY8mlaEXOroUK5IoPPbBpym97Jdjfm4/view?usp=drivesdk" },
+  { title: "TBT of The Day Cold Weather", link: "https://drive.google.com/file/d/1QOp3TVAb-si19p-taHpPjSwEfXs1O5us/view?usp=drivesdk" },
+  { title: "TBT of The Day Compressed Gas", link: "https://drive.google.com/file/d/1a7tLsOI7Re7QAWDivisUFdakbvpSEYOt/view?usp=drivesdk" },
+  { title: "TBT of The Day Construction Fires", link: "https://drive.google.com/file/d/1nXBiIuAEjs4om2NwASqfyhtT-8IUBpGt/view?usp=drivesdk" },
+  { title: "TBT of The Day Corrosive Materials", link: "https://drive.google.com/file/d/1VaFxPYhYt0Ho8blbkGQi2S4ubsT882ge/view?usp=drivesdk" },
+  { title: "TBT of The Day Dangerously reactive material", link: "https://drive.google.com/file/d/16CNFN5iuf3YFyVW-tYNVQgHkRu8z8deg/view?usp=drivesdk" },
+  { title: "TBT of The Day Dial before you Dig", link: "https://drive.google.com/file/d/1YlWyaHh2lPoum-OYYoJ2qP8t948qwLZI/view?usp=drivesdk" },
+  { title: "TBT of The Day Driving in Reverse", link: "https://drive.google.com/file/d/1QzLSWz3CFfjGdmj62OsFdvT5IcV_lrqJ/view?usp=drivesdk" },
+  { title: "TBT of The Day Emergency Response", link: "https://drive.google.com/file/d/1bWiXimPy6SmqbtEs5LxJE9zvS765GSzN/view?usp=drivesdk" },
+  { title: "TBT of The Day Equipment Guards", link: "https://drive.google.com/file/d/1i4o3HHM6O2EPJ1hf-2IQ97_AREDCMIDr/view?usp=drivesdk" },
+  { title: "TBT of The Day Exercise and Health", link: "https://drive.google.com/file/d/13pnUXqSmGNuXHAGKG7TyKhwryEWbtAaO/view?usp=drivesdk" },
+  { title: "TBT of The Day Eye Protection", link: "https://drive.google.com/file/d/13HufH-DcwH-P-pEZZKTUNzHSo2lzyzLa/view?usp=drivesdk" },
+  { title: "TBT of The Day Fall Protection", link: "https://drive.google.com/file/d/1RPpUrSAzCOE8uGUlE1sCXH0woxxzJqw4/view?usp=drivesdk" },
+  { title: "TBT of The Day Fire Prevention", link: "https://drive.google.com/file/d/1Sz8Kobsyj3Sib4vhKvY2JDPjJUs2MERC/view?usp=drivesdk" },
+  { title: "TBT of The Day First Aid Kit", link: "https://drive.google.com/file/d/1g50xudoRJVXxXvum4vbNaEebSvM_Kkyo/view?usp=drivesdk" },
+  { title: "TBT of The Day First aid kits Naloxia", link: "https://drive.google.com/file/d/1XQ8Zy1xI621BA2oktxLesZiXh0DiWFER/view?usp=drivesdk" },
+  { title: "TBT of The Day Ground Stability", link: "https://drive.google.com/file/d/1afLmut5ReTTZspJqEBd2sg1pAxq9y3F0/view?usp=drivesdk" },
+  { title: "TBT of The Day Hand Protection", link: "https://drive.google.com/file/d/1NeYb6ZIpm8sqU-VcyLDqrOwDvHnmZwrq/view?usp=drivesdk" },
+  { title: "TBT of The Day Hand tools", link: "https://drive.google.com/file/d/1L9n9G5HRo4Gi0bw_g-7eBxsrtBi7ADPG/view?usp=drivesdk" },
+  { title: "TBT of The Day Hand Tools and PPE", link: "https://drive.google.com/file/d/1CrvCgTI0uMztvKsEGgafHwJNQoWBaF-K/view?usp=drivesdk" },
+  { title: "TBT of The Day Hearing Conservation", link: "https://drive.google.com/file/d/19_gZ3vWtx1Vx56Nyx7z3BEB3I5XdvZ6y/view?usp=drivesdk" },
+  { title: "TBT of The Day Heat Stress", link: "https://drive.google.com/file/d/1FlnBFJR3oWVlmvaptbvEHurdVrZHm7hh/view?usp=drivesdk" },
+  { title: "TBT of The Day HID and Driving Awareness", link: "https://drive.google.com/file/d/1NHrzYkF5AfIG7sxgu1Vf8pU5XsWhThfK/view?usp=drivesdk" },
+  { title: "TBT of The Day High Pressure Equipment Safety", link: "https://drive.google.com/file/d/1Z6dYVSGFeGXc5ByA7tV0XRXmHVI3V3L0/view?usp=drivesdk" },
+  { title: "TBT of The Day Housekeeping", link: "https://drive.google.com/file/d/1tRet-AThes-9zgXQruo9c-MTgw-_zVdc/view?usp=drivesdk" },
+  { title: "TBT of The Day How to Inspect your Gloves", link: "https://drive.google.com/file/d/1HLmzQDnDGtEY4xamLE7rTWdH9islH0Fu/view?usp=drivesdk" },
+  { title: "TBT of The Day Indoor Hazards", link: "https://drive.google.com/file/d/1vU2WmuBBceUufEX0dAnd65aXmodHT5LF/view?usp=drivesdk" },
+  { title: "TBT of The Day Insects Bites", link: "https://drive.google.com/file/d/1ajVsD83kZMpMKsDYSqpNI0WK2MpEgxyx/view?usp=drivesdk" },
+  { title: "TBT of The Day Lead Material", link: "https://drive.google.com/file/d/1SNT0t6LarP-UcZUPNR-hrb7JwEPy6cXG/view?usp=drivesdk" },
+  { title: "TBT of The Day Manual Handling", link: "https://drive.google.com/file/d/1RV69YCoHVqPHouy5tF9c7ab5aDG8pmo9/view?usp=drivesdk" },
+  { title: "TBT of The Day Mechanical Equipment", link: "https://drive.google.com/file/d/1XZ_xQ7bCqdJXqfbrPkMXUbF4IcCw3q7_/view?usp=drivesdk" },
+  { title: "TBT of The Day Noise", link: "https://drive.google.com/file/d/1nFQ0Pm5bj1Cgi660JrpZ-iy_N2CCF4cl/view?usp=drivesdk" },
+  { title: "TBT of The Day Office Safety", link: "https://drive.google.com/file/d/11hHS314Vh_dfCYOo9r3QCGmjD4zlT4Ok/view?usp=drivesdk" },
+  { title: "TBT of The Day Personal Protection Equipment", link: "https://drive.google.com/file/d/1yizSxE4ZIYufBkJ7Pq3wl7GGFvSY4bUo/view?usp=drivesdk" },
+  { title: "TBT of The Day Plant and Machinery", link: "https://drive.google.com/file/d/1fQJRLO1M6GmjjdHpqW-uL1pMPnnrdPLQ/view?usp=drivesdk" },
+  { title: "TBT of The Day Qualified Operators", link: "https://drive.google.com/file/d/1eBVA8jJivO8dV2Se9_ZdrplOtKxf_Xwu/view?usp=drivesdk" },
+  { title: "TBT of The Day Reporting Accidents", link: "https://drive.google.com/file/d/1grVco6aH7hLEmAGc9x7qbLSbrOyGxSGb/view?usp=drivesdk" },
+  { title: "TBT of The Day Risk Assessment", link: "https://drive.google.com/file/d/1lZ7V6W8ylA3TVRo4Zm3fF8sYNTw3LfnW/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe Lifting of Objects", link: "https://drive.google.com/file/d/1pZkmeepCfjVOoovZLf35fh1QFjhyVSg7/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe Operation of MEWP", link: "https://drive.google.com/file/d/1HsJ7pCokUIVSdyyCvPpbDUFAQQiqNeh9/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe Operation of Pneumatic Tools", link: "https://drive.google.com/file/d/1bfxwvthfR2pABZKiiZ-wwEd2jUXcv7HX/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe Operation Portable power tools", link: "https://drive.google.com/file/d/1rg7ZjUSYJPasy_47p5cRTrWui7oHO1rp/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe Operation of Scaffolding", link: "https://drive.google.com/file/d/1SXUjbENSXzhfIvJIFkwEQopqecTZihNq/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe operation of tools", link: "https://drive.google.com/file/d/1syflkSRazQJJvY5B9ESzAcns0SyQQzQZ/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe Work on roof", link: "https://drive.google.com/file/d/12T4MbPdMW_p-Vtpw9RK4_eo2c1v4FttH/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe Work Practice", link: "https://drive.google.com/file/d/1gVXFDHisfRTRQoTBAXdyZK_0NCGxxjCB/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe Work with hand tools", link: "https://drive.google.com/file/d/1HNC7ldy8c4F3veRMN0ZFNGhH2q5fiScR/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe Working Practice Construction", link: "https://drive.google.com/file/d/14VqfTpa6exin7SmjJS3j9vZwZLh5-dNs/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe Working with Electrical Equipment", link: "https://drive.google.com/file/d/1DDxelLTZAeeb2sJEWfhKF0UNFhmQmjhM/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe Working with Drill, Concrete, Core Cutting , Chipping", link: "https://drive.google.com/file/d/1uadL2bi--xLbRL-yM3zpHWAGi60uxZ_n/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe working with Heavy Equipment", link: "https://drive.google.com/file/d/1xMOCzvFQlFls88pj9ecBYZzRIp03c9BH/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe Working with Heavy Tools", link: "https://drive.google.com/file/d/1M7894AHqrSmj4gSzdTYFa8RnJet4mPic/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe Working with ladders", link: "https://drive.google.com/file/d/1b7Mepx2_zUDylghCKtq_I6xUAsdKGyOx/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe Working with traffic routes", link: "https://drive.google.com/file/d/1eUzcDAb-xIUVexEtZUiNS0vHZ_oFfq8x/view?usp=drivesdk" },
+  { title: "TBT of The Day Safe Working with Vehicle", link: "https://drive.google.com/file/d/1vJ2svjwJ9XgXtBF0eMvAeLLjfCaV-5-a/view?usp=drivesdk" },
+  { title: "TBT of The Day Safety Awareness", link: "https://drive.google.com/file/d/1yWrqcoXxBOZetGmkxgsShPZCWQSkKA_G/view?usp=drivesdk" },
+  { title: "TBT of The Day Safety in Industrial area", link: "https://drive.google.com/file/d/1dH1XY6hAJz296ymAIF6u3vCWYzUASx1e/view?usp=drivesdk" },
+  { title: "TBT of The Day Scaffolding", link: "https://drive.google.com/file/d/1tL8epcXq_yJqG5wzHpfql7ufxLToi9SL/view?usp=drivesdk" },
+  { title: "TBT of The Day Slips, Trips and Falls", link: "https://drive.google.com/file/d/1F7TNF2sKAwLKN__Sei7BF3JDpzVkcFEP/view?usp=drivesdk" },
+  { title: "TBT of The Day Smoke and Toxic Gases", link: "https://drive.google.com/file/d/1NiNlYJL9iOkYGCqe9lMUldj1I7mHTpZz/view?usp=drivesdk" },
+  { title: "TBT of The Day Suitable Tools", link: "https://drive.google.com/file/d/1Azg5I-8yd7XFf7GscvZ0NqNqWefKHPKm/view?usp=drivesdk" },
+  { title: "TBT of The Day Traffic Route", link: "https://drive.google.com/file/d/1oGI1MpGDbaxYLip7no8_ox5nq5lVzScE/view?usp=drivesdk" },
+  { title: "TBT of The Day Use of Compressed Gas", link: "https://drive.google.com/file/d/1HSCKjDvErdFP3SX9WgbUvaVThZbT5FdW/view?usp=drivesdk" },
+  { title: "TBT of The Day Use of PPE", link: "https://drive.google.com/file/d/1vnXmG5di_9iVLCHvOLfbTofkBBpVqAAx/view?usp=drivesdk" },
+  { title: "TBT of The Day Vehicle and Transportation", link: "https://drive.google.com/file/d/1gW-NPGfujHFXbbRvj1n-MOH_i3xm7Q2m/view?usp=drivesdk" },
+  { title: "TBT of The Day Vehicle movement on site", link: "https://drive.google.com/file/d/1gAmc2WO_smXxVUxGwjFvLBmI3kcRrMlp/view?usp=drivesdk" },
+  { title: "TBT of The Day Walking on uneven ground", link: "https://drive.google.com/file/d/1vN5ZabdcpY3RJfIxRjWJHT3sejVfl5hP/view?usp=drivesdk" },
+  { title: "TBT of The Day Welding, Cutting and Grinding", link: "https://drive.google.com/file/d/1oM-xIISFvS5VcterChmJzvmmC7gMiFL0/view?usp=drivesdk" },
+  { title: "TBT of The Day Workplace safety plan", link: "https://drive.google.com/file/d/1enLU0T27BLTNotJuCiIp0O206n4VWXQo/view?usp=drivesdk" },
+  { title: "TBT of The Day Working at Height", link: "https://drive.google.com/file/d/1IQXxqEvuUcLOdwZtGt9j7_fg7SG91oyl/view?usp=drivesdk" },
+  { title: "TBT of The Day Working in cold environments", link: "https://drive.google.com/file/d/1D3VpCDuZMyFCIHVd1XufmEqN_s_cqAi0/view?usp=drivesdk" },
+  { title: "TBT of The Day Working in Confined Spaces", link: "https://drive.google.com/file/d/1mUuYt5TonFky6vwUeKaM7NVTL-xRBA4c/view?usp=drivesdk" },
+  { title: "TBT of The Day Working near Excavations", link: "https://drive.google.com/file/d/1-fsjfModLdme2Xw_alZgiWZ5-rnbEIFR/view?usp=drivesdk" },
+  { title: "TBT of The Day Working on bridges", link: "https://drive.google.com/file/d/1YaIuC4cltwTfS7TiJU7VYIf6XeKZqSo-/view?usp=drivesdk" },
+  { title: "TBT of The Day Working on moving vehicle", link: "https://drive.google.com/file/d/1sGLUH42ud5I9i_o1jMtpH_S-eu5TJ1J3/view?usp=drivesdk" },
+  { title: "TBT of The Day Working with Hazardous Materials", link: "https://drive.google.com/file/d/1gYF6cUISYjUZF_pLEKadmPbe49YM2_ph/view?usp=drivesdk" }
 ];
 
-// JSA Data structure: { title: "JSA Title", link: "Google Drive Link" }
+// =========================================
+// JSA LIBRARY
+// =========================================
+//
+// Each item: { title: "JSA Title", link: "Google Drive link" }
+
 window.jsaData = [
   { title: "Abrasive Blasting And Coating", link: "https://drive.google.com/file/d/1tZBj37GGJ7h9uRYDI5TIL04OkNrEMoLu/view?usp=drivesdk" },
   { title: "Backfilling Levelling And Compaction", link: "https://drive.google.com/file/d/1I32miHCfXBzETNx5UePxwHY4f9Fi-Fd1/view?usp=drivesdk" },
@@ -161,7 +175,7 @@ window.jsaData = [
   { title: "Housekeeping Activities", link: "https://drive.google.com/file/d/1C8YqNAkt6xGh7lqG51WivOGsyR3OullG/view?usp=drivesdk" },
   { title: "Hydrotesting of Pipe Line", link: "https://drive.google.com/file/d/1_aQ8-UiNhlv6rcMFf98KcEEGs5ARH2vV/view?usp=drivesdk" },
   { title: "Installation of Cable Tray and Ladder", link: "https://drive.google.com/file/d/1uKNobEawMyCUN-DuhktF7TqN7bW5nKbu/view?usp=drivesdk" },
-  { title: "Installation of Control Valve,  PSV, MOV, Blind Blind Flange and Vent Valve", link: "https://drive.google.com/file/d/1hc_32uUlTOZYw93kB7GvTaylor/view?usp=drivesdk" }, // NOTE: verify this ID
+  { title: "Installation of Control Valve,  PSV, MOV, Blind Blind Flange and Vent Valve", link: "https://drive.google.com/file/d/1hc_32uUlTOZYw93kB7GvTaylor/view?usp=drivesdk" },
   { title: "Installation of Electrical Panel and Switchgear", link: "https://drive.google.com/file/d/1qvrydnktRL-HpmJ8Gn0czpWMEitnRrH_/view?usp=drivesdk" },
   { title: "Installation of Fence and Gates", link: "https://drive.google.com/file/d/1aSUh2xIfxV29R0hIJrKbqG4U6ZlQKp0I/view?usp=drivesdk" },
   { title: "Installation of Fire Water Facility", link: "https://drive.google.com/file/d/1uKG2pcIP-BPcXc-EDjvFb5afpRLEaQgs/view?usp=drivesdk" },
