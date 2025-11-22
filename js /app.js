@@ -746,18 +746,16 @@ function toggleDarkMode() {
 document.addEventListener('DOMContentLoaded', () => {
     // 🆕 تطبيق التفضيل المحفوظ عند التحميل
     const savedTheme = localStorage.getItem('theme');
+    const modeIcon = document.getElementById('modeIcon');
     if (savedTheme === 'dark') {
         document.body.classList.add('dark-mode');
-        const modeIcon = document.getElementById('modeIcon');
         if (modeIcon) {
              modeIcon.classList.remove('fa-sun');
              modeIcon.classList.add('fa-moon');
         }
-    } else {
-         const modeIcon = document.getElementById('modeIcon');
-         if (modeIcon) {
-             modeIcon.classList.add('fa-sun'); // Default icon for Light Mode
-         }
+    } else if {
+      modeIcon.classList.remove('fa-sun');
+      modeIcon.classList.add('fa-moon');
     }
 
     // 🛑 تطبيق اللون المخصص للزر النشط افتراضيًا عند تحميل الصفحة
