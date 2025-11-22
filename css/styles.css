@@ -1,67 +1,55 @@
-/* =========================================================
-   SAFETY OBS APP – CLEAN, SAFE THEME
-   (NO overlays, NO body flex, tabs stay clickable)
-   ========================================================= */
-
-/* ---------- THEME VARIABLES ---------- */
+/* ====== BASE + THEME TOKENS ====== */
 
 :root {
-  /* Light (default) */
-  --page-bg: #e5edf8;
-  --shell-bg: #f7f9fc;
-
+  --bg-color: #eef3f9;
+  --header-gradient: linear-gradient(120deg, #008b8b, #0069b9);
   --card-bg: #ffffff;
-  --card-border: rgba(148, 163, 184, 0.35);
+  --card-elevated-bg: #ffffff;
+  --text-color: #1f2933;
+  --text-muted: #6b7280;
+  --border-color: rgba(15, 23, 42, 0.1);
+  --shadow-soft: 0 18px 40px rgba(15, 23, 42, 0.18);
 
-  --header-gradient-start: #0f766e;
-  --header-gradient-end: #0369a1;
+  --primary-color: #0f9d58;
+  --secondary-color: #2563eb;
+  --danger-color: #ef4444;
+  --success-color: #16a34a;
+  --accent-light: rgba(37, 99, 235, 0.06);
 
-  --primary: #16a34a;     /* safety green */
-  --primary-soft: rgba(22, 163, 74, 0.1);
-  --accent: #f97316;      /* orange */
-  --danger: #dc2626;
-  --info: #0284c7;
+  --jsa-color: #6f42c1;
+  --kpi-color: #0ea5e9;
+  --heat-color: #f97316;
+  --wind-color: #0ea5e9;
 
-  --text-main: #0f172a;
-  --text-soft: #64748b;
+  --nav-bg: rgba(255, 255, 255, 0.98);
+  --nav-border: rgba(15, 23, 42, 0.04);
+  --nav-icon: #6b7280;
 
-  --nav-bg: #ffffff;
-  --nav-border: rgba(148, 163, 184, 0.6);
-  --nav-active-bg: rgba(22, 163, 74, 0.08);
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+  --radius-pill: 999px;
 
-  --shadow-shell: 0 16px 40px rgba(15, 23, 42, 0.16);
-  --shadow-card: 0 10px 22px rgba(15, 23, 42, 0.1);
+  --transition-fast: 0.18s ease-out;
+  --transition-med: 0.25s ease-out;
 }
 
-/* Dark mode: just change variables */
+/* Dark mode: just override tokens */
 body.dark-mode {
-  --page-bg: #020617;
-  --shell-bg: #020617;
+  --bg-color: #020617;
+  --header-gradient: linear-gradient(120deg, #0f172a, #020617);
+  --card-bg: #020617;
+  --card-elevated-bg: #020617;
+  --text-color: #e5e7eb;
+  --text-muted: #9ca3af;
+  --border-color: rgba(148, 163, 184, 0.4);
+  --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.9);
 
-  --card-bg: #0b1727;
-  --card-border: rgba(148, 163, 184, 0.35);
-
-  --header-gradient-start: #020617;
-  --header-gradient-end: #020617;
-
-  --primary: #22c55e;
-  --primary-soft: rgba(34, 197, 94, 0.18);
-  --accent: #fb923c;
-  --danger: #ef4444;
-  --info: #38bdf8;
-
-  --text-main: #f9fafb;
-  --text-soft: #cbd5f5;
-
-  --nav-bg: #020617;
-  --nav-border: rgba(148, 163, 184, 0.7);
-  --nav-active-bg: rgba(34, 197, 94, 0.22);
-
-  --shadow-shell: 0 18px 40px rgba(0, 0, 0, 0.8);
-  --shadow-card: 0 14px 26px rgba(15, 23, 42, 0.95);
+  --nav-bg: rgba(15, 23, 42, 0.98);
+  --nav-border: rgba(148, 163, 184, 0.25);
+  --nav-icon: #9ca3af;
 }
 
-/* ---------- GLOBAL / LAYOUT ---------- */
+/* ====== RESET ====== */
 
 *,
 *::before,
@@ -77,664 +65,625 @@ body {
 }
 
 body {
-  font-family: "Lato", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  background: var(--page-bg);
-  color: var(--text-main);
+  font-family: "Lato", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.9), var(--bg-color) 55%, var(--bg-color));
+  color: var(--text-color);
 }
 
-/* main shell – NO weird flex on body */
+/* Remove blue tap highlight on mobile */
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ====== APP SHELL ====== */
+
 .app-container {
-  max-width: 1100px;
-  margin: 10px auto;
-  min-height: calc(100vh - 20px);
-  background: var(--shell-bg);
-  border-radius: 22px;
-  box-shadow: var(--shadow-shell);
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 10px 10px 76px; /* bottom space for nav */
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
-/* ---------- HEADER ---------- */
+/* HEADER */
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 14px 18px;
+  margin-bottom: 12px;
+  border-radius: 999px;
+  background-image: var(--header-gradient);
   color: #f9fafb;
-  background: linear-gradient(
-    90deg,
-    var(--header-gradient-start),
-    var(--header-gradient-end)
-  );
+  box-shadow: 0 16px 35px rgba(15, 23, 42, 0.38);
 }
 
-.header > span {
+.header span {
+  font-family: "Poppins", system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: "Poppins", sans-serif;
-  font-weight: 600;
-  letter-spacing: 0.03em;
 }
 
-.header > span::before {
-  content: "";
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: #22c55e;
-  box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.4);
-}
-
-/* dark/light icon button */
 .mode-toggle {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border-radius: 999px;
-  border: 1px solid rgba(248, 250, 252, 0.5);
+  background: rgba(15, 23, 42, 0.22);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(15, 23, 42, 0.45);
-  color: #facc15;
   cursor: pointer;
+  border: 1px solid rgba(148, 163, 184, 0.65);
+  backdrop-filter: blur(12px);
+  transition: background var(--transition-fast), transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
-/* ---------- CONTENT ---------- */
+.mode-toggle i {
+  color: #facc15;
+  font-size: 17px;
+}
+
+.mode-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.35);
+}
+
+/* CONTENT AREA */
 
 .content-area {
-  flex: 1;
-  padding: 12px 14px 70px; /* bottom space for nav */
-  overflow-y: auto;
+  flex: 1 1 auto;
+  margin-top: 4px;
+  padding: 4px 4px 10px;
+  border-radius: 26px;
+  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.8), var(--bg-color));
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
 }
-
-.content-area::-webkit-scrollbar {
-  width: 6px;
-}
-.content-area::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.7);
-  border-radius: 999px;
-}
-
-/* ---------- BASIC TABS ---------- */
 
 .tab-content {
   display: none;
+  height: 100%;
+  overflow-y: auto;
+  padding: 14px 16px 18px;
 }
+
 .tab-content.active {
   display: block;
 }
 
-/* =========================================================
-   HOME / INDEX
-   ========================================================= */
+/* Nice scroll on desktop */
+@media (min-width: 768px) {
+  .tab-content {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.7) transparent;
+  }
+  .tab-content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .tab-content::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.7);
+    border-radius: 99px;
+  }
+}
 
-.home-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+/* ====== CARDS / GENERIC ====== */
+
+.announcement-card {
+  background: var(--card-elevated-bg);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  padding: 12px 16px;
   margin-bottom: 10px;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
 }
 
-.home-summary-card {
-  background: radial-gradient(circle at top left, #16a34a, #065f46);
-  border-radius: 18px;
-  padding: 10px 12px;
-  color: #e5fdf0;
-  box-shadow: var(--shadow-card);
-}
-
-.home-summary-label {
-  font-size: 11px;
+.card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  opacity: 0.9;
+  margin-bottom: 4px;
 }
 
-.home-summary-value {
-  font-family: "Poppins", sans-serif;
-  font-size: 20px;
-  font-weight: 700;
+.card-date {
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
-/* cards on home – TBT, leaderboard, env, etc. */
+.card-content {
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--text-color);
+  border-top: 1px dashed rgba(148, 163, 184, 0.45);
+  padding-top: 6px;
+  display: none;
+}
 
-.home-section-card {
-  background: var(--card-bg);
-  border-radius: 18px;
-  padding: 10px 12px;
-  border: 1px solid var(--card-border);
-  box-shadow: var(--shadow-card);
+/* News cards: make content collapsible */
+.announcement-card .card-title.open + .card-content {
+  display: block;
+}
+
+/* Month text */
+
+.info-month {
+  font-size: 13px;
+  color: var(--text-muted);
   margin-bottom: 8px;
 }
 
-.home-section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 5px;
-}
-
-.home-section-header h3 {
-  margin: 0;
-  font-size: 14px;
-  font-family: "Poppins", sans-serif;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.home-section-header h3 i {
-  color: var(--primary);
-}
-
-.home-link-btn {
-  border-radius: 999px;
-  padding: 3px 10px;
-  font-size: 11px;
-  border: 1px solid rgba(148, 163, 184, 0.8);
-  background: transparent;
-  cursor: pointer;
-  color: var(--text-soft);
-}
-
-/* environment strip */
-
-.home-env-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.home-env-item {
-  background: rgba(148, 163, 184, 0.08);
-  border-radius: 14px;
-  padding: 7px 9px;
-}
-
-.home-env-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-soft);
-}
-
-.home-env-value {
-  font-size: 13px;
-  font-weight: 600;
-}
-
-/* month colour + EOM */
-
-.info-month {
-  margin: 8px 2px 4px;
-  font-size: 12px;
-  color: var(--text-soft);
-}
-
-#colorName {
-  font-weight: 700;
-  color: var(--accent);
-}
-
-#eomCard {
-  background: linear-gradient(
-    90deg,
-    rgba(250, 204, 21, 0.1),
-    var(--card-bg)
-  );
-  border-radius: 18px;
-  padding: 9px 11px;
-  border: 1px solid var(--card-border);
-  box-shadow: var(--shadow-card);
-}
-
-#eomCardTitle {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 3px;
-}
-
-/* =========================================================
-   ACCORDIONS (Emergency / Safety / TBT / Links)
-   ========================================================= */
+/* ====== ACCORDION ====== */
 
 .accordion {
   width: 100%;
-  margin-top: 8px;
-  padding: 9px 11px;
-  border-radius: 16px;
-  border: none;
-  background: linear-gradient(
-    90deg,
-    rgba(15, 23, 42, 0.96),
-    rgba(30, 64, 175, 0.96)
-  );
-  color: #e5e7eb;
+  padding: 10px 14px;
+  margin-bottom: 6px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: radial-gradient(circle at left, rgba(255, 255, 255, 0.9), #0f172a);
+  color: #f9fafb;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
+  gap: 10px;
   cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast),
+    background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .accordion i {
-  font-size: 14px;
+  opacity: 0.95;
+}
+
+.accordion:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.46);
 }
 
 .accordion.activeAcc {
-  background: linear-gradient(
-    90deg,
-    rgba(22, 163, 74, 0.96),
-    rgba(30, 64, 175, 0.96)
-  );
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.55);
 }
+
+/* Panels */
 
 .panel {
   display: none;
-  margin-top: 4px;
-  padding: 8px 11px 10px;
-  border-radius: 14px;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  font-size: 13px;
-  color: var(--text-main);
-}
-
-/* GPS button */
-
-.gps-btn {
-  margin-top: 8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 11px;
-  border-radius: 999px;
-  border: none;
-  background: var(--primary);
-  color: #ecfdf5;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* =========================================================
-   OBSERVATIONS TAB
-   ========================================================= */
-
-.obs-summary-bar {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.obs-summary-item {
-  padding: 8px 10px;
-  border-radius: 18px;
-  background: radial-gradient(circle at top left, #0ea5e9, #0369a1);
-  color: #e0f2fe;
-  box-shadow: var(--shadow-card);
-}
-
-.obs-summary-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.obs-summary-value {
-  font-family: "Poppins", sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-/* filters */
-
-.obs-filters {
-  background: var(--card-bg);
-  border-radius: 18px;
-  padding: 8px 10px;
-  border: 1px solid var(--card-border);
-  box-shadow: var(--shadow-card);
-  margin-bottom: 10px;
-}
-
-.obs-filter-row {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 6px;
-}
-
-.obs-filter-chip {
-  flex: 1;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.8);
-  background: transparent;
-  font-size: 11px;
-  padding: 5px 8px;
-  cursor: pointer;
-  color: var(--text-soft);
-}
-
-.obs-filter-chip.active {
-  background: var(--primary-soft);
-  color: #065f46;
-  border-color: rgba(22, 163, 74, 0.9);
-}
-
-.obs-filters select,
-.obs-filters input[type="text"] {
-  flex: 1;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.9);
-  padding: 6px 10px;
-  font-size: 12px;
-  color: var(--text-main);
-  background: var(--shell-bg);
-}
-
-/* empty state */
-
-.obs-empty-state {
-  text-align: center;
-  padding: 12px 9px;
-  margin-top: 8px;
+  padding: 10px 14px 12px;
+  margin: 0 0 10px;
   border-radius: 16px;
-  background: var(--card-bg);
-  border: 1px dashed rgba(148, 163, 184, 0.8);
-  color: var(--text-soft);
-  box-shadow: var(--shadow-card);
+  background: rgba(15, 23, 42, 0.97);
+  color: #e5e7eb;
+  border-left: 3px solid var(--primary-color);
+  font-size: 13.5px;
 }
 
-/* open sheet button */
-
-.obs-open-sheet-btn {
-  margin-top: 6px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.9);
-  background: var(--card-bg);
-  color: var(--text-main);
-  font-size: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
+.panel ul,
+.panel ol {
+  margin: 6px 0;
+  padding-left: 20px;
 }
 
-/* =========================================================
-   LIBRARY (TBT + JSA)
-   ========================================================= */
-
-.library-layout {
-  display: grid;
-  grid-template-columns: 1.1fr 1.3fr;
-  gap: 12px;
+.panel li {
+  margin-bottom: 4px;
 }
 
-.library-column {
-  background: var(--card-bg);
-  border-radius: 18px;
-  padding: 9px 11px;
-  border: 1px solid var(--card-border);
-  box-shadow: var(--shadow-card);
+/* JSA specific */
+.jsa-panel {
+  background: rgba(15, 23, 42, 0.98);
 }
 
-.library-column h3 {
-  margin: 0 0 6px;
-  font-family: "Poppins", sans-serif;
+/* ====== FORMS & INPUTS ====== */
+
+input[type="text"],
+input[type="number"],
+select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
   font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  background: rgba(15, 23, 42, 0.03);
+  color: var(--text-color);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
+    background var(--transition-fast), transform var(--transition-fast);
 }
 
-.library-column h3 i {
-  color: var(--primary);
+input:focus,
+select:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.45);
+  transform: translateY(-0.5px);
 }
 
-#jsaSearch {
-  width: 100%;
-  margin-bottom: 6px;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.9);
-  padding: 6px 10px;
-  font-size: 12px;
+::placeholder {
+  color: var(--text-muted);
 }
 
-/* TBT / JSA items */
-
-.jsa-accordion-item {
-  width: 100%;
-  text-align: left;
-  padding: 7px 8px;
-  border-radius: 12px;
-  background: rgba(15, 23, 42, 0.02);
-  color: var(--text-main);
-  border: 1px solid rgba(148, 163, 184, 0.6);
-  margin-bottom: 5px;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  cursor: pointer;
-}
-
-.jsa-accordion-item i {
-  color: var(--primary);
-}
-
-/* =========================================================
-   TOOLS / KPI / HEAT / WIND
-   ========================================================= */
+/* ====== KPI / TOOLS ====== */
 
 .tool-toggle-container {
-  display: inline-flex;
-  padding: 3px;
-  border-radius: 999px;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  box-shadow: var(--shadow-card);
+  display: flex;
+  gap: 6px;
   margin-bottom: 10px;
+  background: rgba(15, 23, 42, 0.06);
+  padding: 4px;
+  border-radius: 999px;
 }
 
 .tool-toggle-btn {
+  flex: 1;
   border-radius: 999px;
   border: none;
-  padding: 6px 12px;
-  background: transparent;
-  font-size: 11px;
+  padding: 6px 10px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--text-soft);
+  background: transparent;
+  color: var(--text-muted);
   cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast),
+    transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .tool-toggle-btn.active-tool {
-  background: var(--primary-soft);
-  color: #065f46;
+  background: #ffffff;
+  color: var(--kpi-color);
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.15);
+  transform: translateY(-1px);
 }
 
-/* generic KPI card */
+/* KPI card */
 
 .kpi-card {
-  border-radius: 18px;
   background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  padding: 9px 11px;
-  margin-bottom: 8px;
-  box-shadow: var(--shadow-card);
-}
-
-/* =========================================================
-   NEWS
-   ========================================================= */
-
-.announcement-card {
   border-radius: 18px;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  padding: 9px 11px;
-  margin-bottom: 8px;
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-color);
+  padding: 10px 12px 12px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-left: 4px solid var(--kpi-color);
 }
 
-/* =========================================================
-   MODALS (Leaderboard & Emergency)
-   ========================================================= */
-
-.modal {
-  display: none;          /* VERY IMPORTANT: start hidden */
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.85);
-  z-index: 999;          /* above everything */
+.kpi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.modal-content {
-  background: var(--card-bg);
-  color: var(--text-main);
-  margin: 40px auto;
-  padding: 14px 16px 16px;
-  border-radius: 18px;
-  border: 1px solid var(--card-border);
-  max-width: 720px;
-  width: 94%;
-  box-shadow: 0 24px 46px rgba(0, 0, 0, 0.8);
+.kpi-title {
+  font-size: 14px;
+  font-weight: 600;
 }
 
-.close-btn {
-  float: right;
-  font-size: 20px;
+.kpi-badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.kpi-badge.leading {
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+}
+
+.kpi-badge.lagging {
+  background: rgba(239, 68, 68, 0.09);
+  color: #b91c1c;
+}
+
+.kpi-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.kpi-input-group label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.kpi-input-field {
+  background: rgba(15, 23, 42, 0.02);
+}
+
+.kpi-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kpi-result-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kpi-result-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.kpi-result-value {
+  font-size: 16px;
   font-weight: 700;
-  cursor: pointer;
 }
 
-/* =========================================================
-   FLOATING BUTTONS
-   ========================================================= */
+/* KPI result colors */
+.text-neutral {
+  color: var(--text-muted);
+}
+.text-good {
+  color: #16a34a;
+}
+.text-bad {
+  color: #dc2626;
+}
+
+.kpi-citation {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* Heat & wind result cards */
+
+#heatIndexResultCard,
+#windSpeedResultCard {
+  margin-top: 10px;
+  border-radius: 20px;
+  padding: 10px 12px;
+  display: none;
+  background: #111827;
+  color: #f9fafb;
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.6);
+}
+
+.heat-value,
+.wind-value {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 4px 0 2px;
+}
+
+.heat-category,
+.wind-category {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.heat-recommendations,
+.wind-recommendations {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.heat-recommendations ul,
+.wind-recommendations ul {
+  padding-left: 18px;
+}
+
+/* ====== FLOATING BUTTONS ====== */
 
 #addObservationButton {
   position: fixed;
   right: 18px;
-  bottom: 76px;
-  padding: 8px 14px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  border: none;
-  color: #ecfdf5;
-  font-size: 12px;
-  font-weight: 600;
+  bottom: 80px;
+  z-index: 30;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  text-decoration: none;
-  box-shadow: 0 18px 36px rgba(22, 163, 74, 0.55);
-  z-index: 20;
-}
-
-#emergencyQuickButton {
-  position: fixed;
-  left: 18px;
-  bottom: 76px;
-  width: 44px;
-  height: 44px;
+  padding: 10px 16px;
   border-radius: 999px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+  box-shadow: 0 18px 45px rgba(16, 185, 129, 0.6);
   border: none;
-  background: radial-gradient(circle at 30% 0%, #fee2e2, #b91c1c);
-  color: #fef2f2;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 18px 38px rgba(185, 28, 28, 0.9);
-  z-index: 20;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast),
+    filter var(--transition-fast);
 }
 
-/* =========================================================
-   BOTTOM NAV (TABS)
-   ========================================================= */
+#addObservationButton i {
+  font-size: 14px;
+}
+
+#addObservationButton:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 20px 50px rgba(16, 185, 129, 0.85);
+  filter: saturate(1.05);
+}
+
+/* ====== NAV BAR (BOTTOM TABS) ====== */
 
 .nav-bar {
-  height: 52px;
-  background: var(--nav-bg);
-  border-radius: 999px;
-  border: 1px solid var(--nav-border);
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  margin: 8px 14px 10px;
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.35);
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  right: 0;
+  padding: 6px 14px 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  background: transparent;
+  pointer-events: none; /* container is non-clickable */
 }
 
+/* Each button stays clickable */
 .nav-button {
+  pointer-events: auto;
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  font-size: 10px;
-  color: var(--text-soft);
+  padding: 6px 4px;
+  border-radius: 999px;
+  background: var(--nav-bg);
+  border: 1px solid var(--nav-border);
+  color: var(--nav-icon);
+  font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast),
+    background var(--transition-fast), color var(--transition-fast);
 }
 
-.nav-icon {
-  font-size: 13px;
+.nav-button .nav-icon {
+  font-size: 16px;
 }
 
 .nav-button.active {
-  background: var(--nav-active-bg);
-  color: var(--text-main);
+  background: linear-gradient(135deg, #22c55e, #0ea5e9);
+  color: #ffffff !important;
+  box-shadow: 0 18px 40px rgba(16, 185, 129, 0.75);
+  transform: translateY(-2px);
 }
 
-.nav-button.active .nav-icon {
-  color: var(--primary);
+.nav-button:active {
+  transform: translateY(0);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.25);
 }
 
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
+/* ====== MODALS ====== */
 
-@media (max-width: 768px) {
-  .app-container {
-    max-width: 100%;
-    margin: 0;
-    border-radius: 0;
-    min-height: 100vh;
-  }
-
-  .content-area {
-    padding: 10px 10px 70px;
-  }
-
-  .library-layout {
-    grid-template-columns: 1fr;
-  }
-
-  #addObservationButton {
-    right: 14px;
-  }
-  #emergencyQuickButton {
-    left: 14px;
-  }
+.modal {
+  display: none; /* important: hidden by default */
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
 }
 
-@media (max-width: 480px) {
-  .nav-bar {
-    margin: 8px 10px 10px;
-  }
+.modal-content {
+  background-color: var(--card-bg);
+  margin: 60px auto;
+  padding: 16px 18px 20px;
+  border-radius: 18px;
+  border: 1px solid var(--border-color);
+  max-width: 520px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  box-shadow: 0 25px 70px rgba(15, 23, 42, 0.9);
+  color: var(--text-color);
+}
 
-  #addObservationButton {
-    padding: 7px 12px;
-    font-size: 11px;
-  }
+.close-btn {
+  float: right;
+  font-size: 22px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-muted);
+}
 
-  #emergencyQuickButton {
-    width: 40px;
-    height: 40px;
+.close-btn:hover {
+  color: var(--danger-color);
+}
+
+/* Drive button in JSA modal */
+
+.drive-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+/* ====== GPS BUTTON ====== */
+
+.gps-btn {
+  margin-top: 8px;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(37, 99, 235, 0.5);
+  color: #e5e7eb;
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gps-btn i {
+  font-size: 13px;
+}
+
+.gps-result {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+/* ====== IFRAMES ====== */
+
+iframe {
+  border: none;
+  width: 100%;
+  min-height: calc(100vh - 180px);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.15);
+}
+
+/* ====== LOADING SPINNER ====== */
+
+.loading-spinner {
+  padding: 14px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ====== TABLES IN MODALS ====== */
+
+#emergencyContactsTableContainer table,
+#emergencyContactsTableContainer th,
+#emergencyContactsTableContainer td {
+  font-size: 12px;
+}
+
+/* Responsive tweaks */
+
+@media (min-width: 768px) {
+  .header span {
+    font-size: 20px;
+  }
+  .announcement-card {
+    padding: 14px 18px;
+  }
+  .tab-content {
+    padding: 18px 22px 22px;
   }
 }
