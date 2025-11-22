@@ -726,22 +726,20 @@ function filterJSAList() {
 
 // 🆕 دالة تبديل الوضع (Dark/Light Mode)
 function toggleDarkMode() {
-    const body = document.body;
-    const isDarkMode = body.classList.toggle('dark-mode');
-    const modeIcon = document.getElementById('modeIcon');
-    
-    // تحديث الأيقونة والنص
-    if (modeIcon) {
-        modeIcon.classList.remove(isDarkMode ? 'fa-sun' : 'fa-moon');
-        modeIcon.classList.add(isDarkMode ? 'fa-moon' : 'fa-sun');
-    }
-    
-    // حفظ التفضيل (اختياري، لكن يوصى به)
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-    
-    // لإعادة تطبيق الألوان على العناصر التي تستخدم inline style أو ترث من body/root
-    renderJSAList(jsaData); // إعادة رسم قائمة JSA لضبط ألوانها
-    loadTBTOfTheDay(); // إعادة تحميل TBT لضبط لونه
+  const body = document.body;
+  const isDark = body.classList.toggle('dark-mode');
+  const modeIcon = document.getElementById('modeIcon');
+
+  if (modeIcon) {
+    modeIcon.classList.remove('fa-moon', 'fa-sun');
+    modeIcon.classList.add(isDark ? 'fa-sun' : 'fa-moon');
+  }
+
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+
+  // Repaint components that read CSS variables
+  renderJSAList(jsaData);
+  loadTBTOfTheDay();
 }
 
 
