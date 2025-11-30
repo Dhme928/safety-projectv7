@@ -3665,24 +3665,22 @@ function updateHeavyEquipmentSummary(list) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const dueSoon = items.filter(
-    i => i.thirdPartyDate && i.thirdPartyDate >= today && (i.thirdPartyDate - today) / (1000 * 60 * 60 * 24) <= 30
+  const valid = items.filter(
+    i => i.thirdPartyDate && i.thirdPartyDate >= today
   ).length;
 
-  const expired = items.filter(
-    i => i.thirdPartyDate && i.thirdPartyDate < today
+  const overdueOrMissing = items.filter(
+    i => !i.thirdPartyDate || i.thirdPartyDate < today
   ).length;
 
   const totalEl = $('#heqCountTotal');
-  const dueSoonEl = $('#heqCountDueSoon');
-  const expiredEl = $('#heqCountExpired');
+  const validEl = $('#heqCountValid');
+  const overdueEl = $('#heqCountOverdue');
 
   if (totalEl) totalEl.textContent = String(total || 0);
-  if (dueSoonEl) dueSoonEl.textContent = String(dueSoon || 0);
-  if (expiredEl) expiredEl.textContent = String(expired || 0);
+  if (validEl) validEl.textContent = String(valid || 0);
+  if (overdueEl) overdueEl.textContent = String(overdueOrMissing || 0);
 }
-
-
 
 function populateHeavyEquipmentAreaFilter(list) {
   const select = $('#heqAreaFilter');
@@ -3869,7 +3867,7 @@ function setupHeavyEquipmentFilters() {
 
   if (searchInput) {
     searchInput.addEventListener('input', () => {
-      heavyEquipmentFilterState.search = (searchInput.value || '').toLowerCase();
+      heavyEquipmentFilterState.search = searchInput.value || '';
       renderHeavyEquipmentList();
     });
   }
