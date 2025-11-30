@@ -3611,6 +3611,31 @@ async function loadHeavyEquipment() {
       const certLink =
         rawCert && /^https?:\/\//i.test(rawCert) ? rawCert : '';
 
+      // Third party inspection status (TPI)
+      let tpiStatus = 'missing';
+      if (thirdPartyDate) {
+        if (thirdPartyDate < today) {
+          tpiStatus = 'expired';
+        } else {
+          const diffDays =
+            (thirdPartyDate - today) / (1000 * 60 * 60 * 24);
+          tpiStatus = diffDays <= 30 ? 'dueSoon' : 'valid';
+        }
+      }
+
+      // Internal inspection status (INI)
+      let iniStatus = 'missing';
+      if (internalDate) {
+        if (internalDate < today) {
+          iniStatus = 'expired';
+        } else {
+          const diffDaysIni =
+            (internalDate - today) / (1000 * 60 * 60 * 24);
+          iniStatus = diffDaysIni <= 30 ? 'dueSoon' : 'valid';
+        }
+      }
+
+      // Overall certificate status (used for summaries)
       let certificateStatus = 'unknown';
       if (thirdPartyDate) {
         if (thirdPartyDate < today) {
@@ -3638,7 +3663,9 @@ async function loadHeavyEquipment() {
         lastMaintRaw,
         lastMaintDate,
         certLink,
-        certificateStatus
+        certificateStatus,
+        tpiStatus,
+        iniStatus
       };
     });
 
@@ -3779,17 +3806,6 @@ function renderHeavyEquipmentList() {
 
   list.innerHTML = filtered
     .map(item => {
-      const certStatusLabel =
-        item.certificateStatus === 'valid'
-          ? 'Valid certificate'
-          : item.certificateStatus === 'dueSoon'
-          ? 'Expiring soon'
-          : item.certificateStatus === 'overdue'
-          ? 'Overdue / expired'
-          : item.certificateStatus === 'missing'
-          ? 'No certificate'
-          : 'Certificate status';
-
       const internal = item.internalRaw || '—';
       const thirdParty = item.thirdPartyRaw || '—';
       const lastMaint = item.lastMaintRaw || '—';
@@ -3800,26 +3816,53 @@ function renderHeavyEquipmentList() {
                class="heavy-equipment-thumb" loading="lazy">`
         : '';
 
+      // Badge labels and classes for TPI
+      let tpiLabel = 'TPI – No record';
+      let tpiClass = 'heq-badge heq-badge-missing';
+      if (item.tpiStatus === 'valid') {
+        tpiLabel = 'Valid TPI';
+        tpiClass = 'heq-badge heq-badge-valid';
+      } else if (item.tpiStatus === 'dueSoon') {
+        tpiLabel = 'TPI – Due soon';
+        tpiClass = 'heq-badge heq-badge-due';
+      } else if (item.tpiStatus === 'expired') {
+        tpiLabel = 'TPI – Expired';
+        tpiClass = 'heq-badge heq-badge-expired';
+      }
+
+      // Badge labels and classes for INI
+      let iniLabel = 'INI – No record';
+      let iniClass = 'heq-badge heq-badge-missing';
+      if (item.iniStatus === 'valid') {
+        iniLabel = 'Valid INI';
+        iniClass = 'heq-badge heq-badge-valid';
+      } else if (item.iniStatus === 'dueSoon') {
+        iniLabel = 'INI – Due soon';
+        iniClass = 'heq-badge heq-badge-due';
+      } else if (item.iniStatus === 'expired') {
+        iniLabel = 'INI – Expired';
+        iniClass = 'heq-badge heq-badge-expired';
+      }
+
       return `
         <article class="obs-card heavy-equipment-card" data-heavy-index="${item._index}">
           <header class="obs-card-header">
             <div class="obs-card-title-row">
               ${imgHtml}
               <h3 class="obs-type">${escapeHtml(item.assetNo || 'Unknown asset')}</h3>
-              <span class="obs-chip">${escapeHtml(certStatusLabel)}</span>
             </div>
             <div class="obs-chip-row">
-              ${item.type ? `<span class="obs-chip">${escapeHtml(item.type)}</span>` : ''}
-              ${item.owner ? `<span class="obs-chip">${escapeHtml(item.owner)}</span>` : ''}
+              <span class="${tpiClass}">${escapeHtml(tpiLabel)}</span>
+              <span class="${iniClass}">${escapeHtml(iniLabel)}</span>
               ${item.area ? `<span class="obs-chip">${escapeHtml(item.area)}</span>` : ''}
             </div>
           </header>
           <div class="obs-card-body">
-            <div class="obs-main-line">
-              <span class="obs-area">Internal insp.: ${escapeHtml(internal)}</span>
-              <span class="obs-area">3rd party insp.: ${escapeHtml(thirdParty)}</span>
-            </div>
-            <p class="obs-description">Last maintenance: ${escapeHtml(lastMaint)}</p>
+            <p class="obs-description">
+              ${item.type ? `Type: ${escapeHtml(item.type)}<br>` : ''}
+              ${item.owner ? `Owner: ${escapeHtml(item.owner)}<br>` : ''}
+              Last maintenance: ${escapeHtml(lastMaint)}
+            </p>
           </div>
           <footer class="obs-card-footer">
             ${
